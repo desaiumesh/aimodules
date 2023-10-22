@@ -7,6 +7,7 @@ import HomeAIScreen from './screens/HomeAIScreen';
 import TextAIScreen from './screens/TextAIScreen';
 import SpeechAIScreen from './screens/SpeechAIScreen';
 import { appStyles } from './styles/appStyle';
+import App_mic_input from './screens/App_mic_input';
 
 
 function App(): JSX.Element {
@@ -25,6 +26,8 @@ function App(): JSX.Element {
        <Drawer.Screen name="Home" component={HomeAIScreen} />
        <Drawer.Screen name="Text" component={TextAIScreen} />
        <Drawer.Screen name="Speech" component={SpeechAIScreen} />
+       <Drawer.Screen name="AppMic" component={App_mic_input} />
+       
      </Drawer.Navigator>
    </NavigationContainer>
   );

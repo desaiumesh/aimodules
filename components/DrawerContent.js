@@ -19,7 +19,7 @@ const DrawerContent = () => {
                     <DrawerItem label="Home" labelStyle={styles.drawerItemLabel} style={styles.drawerItem} icon={() => (<Ionicons name="home" size={drawerIconSize} color={appStyles.drawerLabelColor} />)} onPress={() => { navigation.navigate('Home') }} />
                     <DrawerItem label="Text" labelStyle={styles.drawerItemLabel} style={styles.drawerItem} icon={() => (<Ionicons name="document-text" size={drawerIconSize} color={appStyles.drawerLabelColor} />)} onPress={() => { navigation.navigate('Text') }} />
                     <DrawerItem label="Speech" labelStyle={styles.drawerItemLabel} style={styles.drawerItem} icon={() => (<Ionicons name="mic" size={drawerIconSize} color={appStyles.drawerLabelColor} />)} onPress={() => { navigation.navigate('Speech') }} />
-                    <DrawerItem label="Vision" labelStyle={styles.drawerItemLabel} style={styles.drawerItem} icon={() => (<Ionicons name="laptop-outline" size={drawerIconSize} color={appStyles.drawerLabelColor} />)} onPress={() => { navigation.navigate('Speech') }} />
+                    <DrawerItem label="AppMic" labelStyle={styles.drawerItemLabel} style={styles.drawerItem} icon={() => (<Ionicons name="laptop-outline" size={drawerIconSize} color={appStyles.drawerLabelColor} />)} onPress={() => { navigation.navigate('AppMic') }} />
                     <DrawerItem label="Language" labelStyle={styles.drawerItemLabel} style={styles.drawerItem} icon={() => (<Ionicons name="language" size={drawerIconSize} color={appStyles.drawerLabelColor} />)} onPress={() => { navigation.navigate('Speech') }} />
 
                 </View>
