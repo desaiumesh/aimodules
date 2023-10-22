@@ -1,13 +1,15 @@
 import { View, Text, Image } from 'react-native'
 import React from 'react'
 import { StyleSheet } from 'react-native'
+import AiModels from '../components/AiModels'
 
 const HomeAIScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.text} >Welcome to AI</Text>
       <Text style={styles.subtext} >Access high-quality vision, speech, language, and text AI models</Text>
-    
+      <Image source={require('../assets/AIImage.jpg')} style={styles.image} />
+      <AiModels></AiModels>
     </View>
   )
 }
