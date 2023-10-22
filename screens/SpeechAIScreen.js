@@ -1,11 +1,15 @@
 import React, { Component, useState, useEffect } from 'react';
 import {
   ImageBackground, PermissionsAndroid, Text, StyleSheet,
-  View, TouchableOpacity, LogBox
+  View, TouchableOpacity, LogBox, ScrollView
 } from 'react-native';
 import 'react-native-get-random-values';
 import 'node-libs-react-native/globals';
-import { AudioConfig, AudioInputStream, AudioStreamFormat, CancellationDetails, CancellationReason, NoMatchDetails, NoMatchReason, ResultReason, SpeechConfig, SpeechRecognizer, SpeechTranslationConfig, TranslationRecognizer } from 'microsoft-cognitiveservices-speech-sdk';
+import {
+  AudioConfig, AudioInputStream,
+  ResultReason, SpeechConfig, SpeechTranslationConfig,
+  TranslationRecognizer, SpeechSynthesizer, SpeakerAudioDestination, AudioOutputStream
+} from 'microsoft-cognitiveservices-speech-sdk';
 import AudioRecord from 'react-native-live-audio-stream';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SelectList } from 'react-native-dropdown-select-list'
@@ -31,10 +35,10 @@ const SpeechAIScreen = () => {
   const [selectedTarget, setTargetSelected] = useState("");
   const [sourceLanguages, setSourceLanguages] = useState([]);
   const [targetLanguages, setTargetLanguages] = useState([]);
- 
+
   const [sourceLanguagesText, setSourceLanguagesText] = useState("");
   const [targetLanguagesText, setTargetLanguagesText] = useState("");
-  
+
   const allLanguageData = [
     { key: '1', value: 'Mobiles', LanguageName: "English", LanguageGenderName: "English (United States) Female", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-JennyNeural" },
     { key: '2', value: 'Appliances', LanguageName: "English", LanguageGenderName: "English (United States) Male", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-GuyNeural" },
@@ -131,7 +135,6 @@ const SpeechAIScreen = () => {
         audioSource: 6,
       };
 
-     
       AudioRecord.init(options);
       //everytime data is recieved from the mic, push it to the pushStream
       AudioRecord.on('data', (data) => {
@@ -144,27 +147,26 @@ const SpeechAIScreen = () => {
       const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, region);
       speechTranslationConfig.speechRecognitionLanguage = language;
       speechTranslationConfig.addTargetLanguage(targetLanguage);
+
       const audioConfig = AudioConfig.fromStreamInput(pushStream);
       recognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
 
       setSourceLanguagesText("");
       setTargetLanguagesText("");
 
-     
-      let sourceLText="";
-      let targetLText ="";
+      let sourceLText = "";
+      let targetLText = "";
 
       recognizer.recognized = (s, e) => {
 
         let reason = e.result.reason;
 
         if (reason === ResultReason.TranslatedSpeech) {
-         
+
           sourceLText = sourceLText + `${e?.result?.text}`;
           setSourceLanguagesText(sourceLText);
-          
-          for (let object of e?.result?.translations?.privMap?.privValues) {
 
+          for (let object of e?.result?.translations?.privMap?.privValues) {
             targetLText = targetLText + `${object}.`;
           }
 
@@ -176,7 +178,6 @@ const SpeechAIScreen = () => {
       recognizer.startContinuousRecognitionAsync(() => {
         console.log("startContinuousRecognitionAsync");
       },
-
         (err) => {
           console.log(err);
         });
@@ -192,6 +193,59 @@ const SpeechAIScreen = () => {
       recognizer.stopContinuousRecognitionAsync();
       initializedCorrectly = false;
     }
+
+    await synthetize()
+  };
+
+  const synthetize = async () => {
+
+    const speechConfig = SpeechConfig.fromSubscription(key, region);
+
+    const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
+    const targetVoice = targetLanguageObj.Voice;
+    console.log(targetVoice);
+
+    speechConfig.VoiceName = targetVoice;
+
+    var stream = AudioOutputStream.createPullStream();
+    let streamConfig = AudioConfig.fromStreamOutput(stream)
+
+    let speechSynthesizer = new SpeechSynthesizer(speechConfig, streamConfig);
+    console.log(targetLanguagesText);
+
+    let text = targetLanguagesText;
+
+    speechSynthesizer.speakTextAsync(
+      text,
+
+      function (result) {
+
+        if (result.reason === ResultReason.SynthesizingAudioCompleted) {
+
+          console.log(result)
+
+          console.log('Synthesis Audio.');
+          console.log(stream.format);
+
+          console.log('Synthesis finished.');
+
+        }
+        else if (result.reason === ResultReason.Canceled) {
+          console.log('Synthesis Canceled.');
+        }
+
+        speechSynthesizer.close();
+        speechSynthesizer = undefined;
+
+      },
+      function (err) {
+        console.log('error');
+        speechSynthesizer.close();
+      })
+
+    console.log("synthetize3");
+
+
   };
 
   return (<ImageBackground source={require('../assets/AI2.jpg')}
@@ -245,9 +299,11 @@ const SpeechAIScreen = () => {
           </View>
         </TouchableOpacity>
       </View>
+      <ScrollView>
+        <Text style={styles.textSource} multiline={true}>{sourceLanguagesText}</Text>
+        <Text style={styles.textSource} multiline={true}>{targetLanguagesText}</Text>
 
-      <Text style={styles.textSource} multiline={true}>{sourceLanguagesText}</Text>
-      <Text style={styles.textSource} multiline={true}>{targetLanguagesText}</Text>
+      </ScrollView>
     </View>
   </ImageBackground>);
 };
@@ -312,13 +368,14 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   textSource: {
-    height: 200,
+    height: 150,
     backgroundColor: appStyles.whiteColor,
     borderColor: appStyles.blackColor,
     borderWidth: 2,
     margin: 10,
     fontSize: 16,
-    borderRadius: 10
+    borderRadius: 10,
+    padding: 5,
   },
 });
 
