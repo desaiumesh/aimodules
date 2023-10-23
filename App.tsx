@@ -6,7 +6,6 @@ import DrawerContent from './components/DrawerContent';
 import HomeAIScreen from './screens/HomeAIScreen';
 import TextAIScreen from './screens/TextAIScreen';
 import SpeechAIScreen from './screens/SpeechAIScreen';
-import { appStyles } from './styles/appStyle';
 import App_mic_input from './screens/App_mic_input';
 
 
