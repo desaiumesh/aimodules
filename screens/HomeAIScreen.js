@@ -1,7 +1,8 @@
-import { View, Text, Image } from 'react-native'
+import { View, Image } from 'react-native'
 import React from 'react'
 import { StyleSheet } from 'react-native'
 import AiModels from '../components/AiModels'
+import { Text } from 'react-native-paper';
 
 const HomeAIScreen = () => {
   return (

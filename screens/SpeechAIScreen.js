@@ -1,6 +1,6 @@
 import React, { Component, useState, useEffect } from 'react';
 import {
-  ImageBackground, PermissionsAndroid, Text, StyleSheet,
+  ImageBackground, PermissionsAndroid, StyleSheet,
   View, TouchableOpacity, LogBox, ScrollView
 } from 'react-native';
 import 'react-native-get-random-values';
@@ -8,18 +8,25 @@ import 'node-libs-react-native/globals';
 import {
   AudioConfig, AudioInputStream,
   ResultReason, SpeechConfig, SpeechTranslationConfig,
-  TranslationRecognizer, SpeechSynthesizer, SpeakerAudioDestination, AudioOutputStream
+  TranslationRecognizer, SpeechSynthesizer, SpeakerAudioDestination, AudioOutputStream, CancellationDetails
 } from 'microsoft-cognitiveservices-speech-sdk';
 import AudioRecord from 'react-native-live-audio-stream';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
 LogBox.ignoreLogs(['new NativeEventEmitter']);
+import { Text, TextInput, Button } from 'react-native-paper';
+import { useTheme } from 'react-native-paper';
+import RNFS from 'react-native-fs';
+
 
 const RESOURCE_KEY = "8b2ccf3a18f44b1182d976b6329d68ad";
 const RESOURCE_REGION = "australiaeast";
 
 const SpeechAIScreen = () => {
+  const [theme, setTheme] = useState();
+
+  const appTheme = useTheme();
 
   const key = RESOURCE_KEY;
   const region = RESOURCE_REGION;
@@ -47,6 +54,8 @@ const SpeechAIScreen = () => {
   ]
 
   useEffect(() => {
+
+    setTheme(appTheme);
 
     allLanguageData.forEach(element => {
 
@@ -93,6 +102,8 @@ const SpeechAIScreen = () => {
         ) {
           console.log('Permissions granted');
         } else {
+          PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+          PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
           console.log('All required permissions not granted');
           return;
         }
@@ -208,18 +219,106 @@ const SpeechAIScreen = () => {
     speechConfig.VoiceName = targetVoice;
 
     var stream = AudioOutputStream.createPullStream();
-    let streamConfig = AudioConfig.fromStreamOutput(stream)
+    let streamConfig = AudioConfig.fromStreamOutput(stream);
+
 
     let speechSynthesizer = new SpeechSynthesizer(speechConfig, streamConfig);
-    console.log(targetLanguagesText);
 
+    // The event synthesis completed signals that the synthesis is completed.
+    speechSynthesizer.synthesisCompleted = async function (s, e) {
+      console.log("synthesisCompleted");
+      console.log("(synthesized)  Reason: " + ResultReason[e.result.reason] + " Audio length: " + e.result.audioData.byteLength);
+      
+
+      /*
+         // Reads(pulls) data from the stream
+         const byteArrays = ArrayBuffer [32000];
+         console.log("step1");
+         let filledSize = 0;
+         let totalSize = 0;
+         while ((filledSize = stream.read(byteArrays)) > 0)
+         {
+             console.log(filledSize);
+             totalSize += filledSize;
+         }
+
+         console.log("total size");
+         console.log(totalSize); 
+
+      let data =e.result.audioData;
+      
+      console.log("result format");
+      console.log(data);
+      console.log(e.result.audioData.format);
+     
+      console.log("stream format");
+      console.log(stream.format);
+
+      console.log("define bytes");
+      var arrayBufferData = new ArrayBuffer(e.result.audioData.byteLength);
+      console.log("define bytes1");
+      let st = await stream.read(arrayBufferData);
+
+      console.log("stream read length");
+      console.log(arrayBufferData.byteLength);
+      console.log(stream.format);
+
+      console.log("stream read");
+      console.log(arrayBufferData);*/
+      console.log(stream.format);
+      var arrayBufferData = new ArrayBuffer(320000);
+      console.log("define bytes1");
+      let st = await stream.read(arrayBufferData);
+      console.log("stream read length");
+      console.log(arrayBufferData.byteLength);
+
+
+      console.log("write to file");
+      var RNFS = require('react-native-fs');
+      var path = RNFS.DocumentDirectoryPath + '/aiaudio6.mp3';
+      console.log(path);
+
+      var bt= Buffer.from(arrayBufferData).toString('base64');
+      console.log(bt);
+      // write the file
+      RNFS.writeFile(path, bt, 'base64')
+        .then((success) => {
+          console.log('FILE WRITTEN!');
+        })
+        .catch((err) => {
+          console.log(err.message);
+        });
+
+      console.log("synthesisCompleted1");
+    };
+
+    // The synthesis started event signals that the synthesis is started.
+    speechSynthesizer.synthesisStarted = function (s, e) {
+      console.log("(synthesis started)");
+    };
+
+    // The event signals that the service has stopped processing speech.
+    // This can happen when an error is encountered.
+    speechSynthesizer.SynthesisCanceled = function (s, e) {
+      var cancellationDetails = CancellationDetails.fromResult(e.result);
+      var str = "(cancel) Reason: " + sdk.CancellationReason[cancellationDetails.reason];
+      if (cancellationDetails.reason === sdk.CancellationReason.Error) {
+        str += ": " + e.result.errorDetails;
+      }
+      console.log(str);
+    };
+
+    console.log(targetLanguagesText);
     let text = targetLanguagesText;
 
     speechSynthesizer.speakTextAsync(
       text,
-
       function (result) {
 
+        speechSynthesizer.close();
+        speechSynthesizer = undefined;
+
+        /*
         if (result.reason === ResultReason.SynthesizingAudioCompleted) {
 
           console.log(result)
@@ -236,19 +335,15 @@ const SpeechAIScreen = () => {
 
         speechSynthesizer.close();
         speechSynthesizer = undefined;
-
+*/
       },
       function (err) {
-        console.log('error');
+        console.log(err);
         speechSynthesizer.close();
       })
-
-    console.log("synthetize3");
-
-
   };
 
-  return (<ImageBackground source={require('../assets/AI2.jpg')}
+  return (<ImageBackground source={require('../assets/speech.jpg')}
     style={styles.image}
     imageStyle={styles.imageStyle}
     resizeMode="cover">
@@ -285,19 +380,9 @@ const SpeechAIScreen = () => {
 
       <View style={styles.buttonConatiner}>
 
-        <TouchableOpacity onPress={() => { initializeAudio() }}>
-          <View style={styles.innerContainer}>
-            <Ionicons name="mic" size={35} color={appStyles.drawerLabelColor} />
-            <Text style={styles.text}>Start</Text>
-          </View>
-        </TouchableOpacity>
+        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { initializeAudio() }}>Start</Button>
+        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
 
-        <TouchableOpacity onPress={() => { stopAudio() }}>
-          <View style={styles.innerContainer}>
-            <Ionicons name="mic" size={35} color={appStyles.drawerLabelColor} />
-            <Text style={styles.text}>Stop</Text>
-          </View>
-        </TouchableOpacity>
       </View>
       <ScrollView>
         <Text style={styles.textSource} multiline={true}>{sourceLanguagesText}</Text>
@@ -316,7 +401,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: appStyles.primaryColor,
     borderRadius: 10,
     padding: 10,
     marginBottom: 10,
@@ -324,7 +408,6 @@ const styles = StyleSheet.create({
     marginLeft: 20,
   },
   text: {
-    color: appStyles.whiteColor,
     fontSize: 15,
     fontWeight: 'bold',
     padding: 10,
@@ -334,12 +417,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   imageStyle: {
-    opacity: 0.4
+    opacity: 0.5
   },
   boxStyles: {
     borderRadius: 10,
     margin: 10,
-    backgroundColor: appStyles.primaryColor,
     opacity: 0.7,
     textAlign: 'center',
     justifyContent: 'center',
@@ -352,7 +434,6 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   dropdownStyles: {
-    backgroundColor: appStyles.whiteColor,
     opacity: 0.7,
     borderRadius: 10,
     margin: 10,
@@ -360,23 +441,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     fontWeight: 'bold',
     fontSize: 15,
+    backgroundColor: appStyles.whiteColor,
   },
   buttonConatiner: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    margin: 10,
+    margin: 10
   },
   textSource: {
     height: 150,
-    backgroundColor: appStyles.whiteColor,
-    borderColor: appStyles.blackColor,
     borderWidth: 2,
     margin: 10,
     fontSize: 16,
     borderRadius: 10,
     padding: 5,
   },
+  button: {
+    margin: 20,
+  }
 });
 
 

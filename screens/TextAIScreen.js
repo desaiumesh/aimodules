@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity, Keyboard, ActivityIndicator } from 'react-native'
+import { View, StyleSheet, TouchableOpacity, Keyboard, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { appStyles } from '../styles/appStyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ImageBackground } from 'react-native';
 import { TextAnalysisEntitiesApi, TextAnalysisLanguageApi, TextAnalysisSentimentApi } from '../api/TextAnalysisApi';
 import Loading from '../components/Loading';
-
+import { Text , TextInput, Button} from 'react-native-paper';
 
 const TextAIScreen = () => {
   const [text, setText] = useState("");
@@ -87,24 +87,19 @@ const TextAIScreen = () => {
           <TextInput placeholder="Write a text here"
             onChangeText={(text) => setText(text)}
             style={styles.textInput} multiline={true} ></TextInput>
-          <TouchableOpacity onPress={() => { analyseText() }}>
-            <View style={styles.innerContainer}>
-              <Ionicons name="document-text" size={35} color={appStyles.drawerLabelColor} />
-              <Text style={styles.text}>ANALYSE</Text>
-            </View>
-          </TouchableOpacity>
+          <Button icon="text" mode="contained" onPress={() => { analyseText() }}>ANALYSE</Button>
           <View>
             <View style={styles.outputContainer}>
-              <Text style={styles.text}> Language: </Text>
-              <Text style={styles.text}>{language} </Text>
+              <Text> Language: </Text>
+              <Text>{language} </Text>
             </View>
             <View style={styles.outputContainer}>
-              <Text style={styles.text}>Sentiment: </Text>
-              <Text style={styles.text}>{sentiment} </Text>
+              <Text>Sentiment: </Text>
+              <Text>{sentiment} </Text>
             </View>
             <View style={styles.outputContainer}>
-              <Text style={styles.text}>Entities: </Text>
-              <Text style={styles.text} multiline={true}>{entities} </Text>
+              <Text >Entities: </Text>
+              <Text multiline={true}>{entities} </Text>
             </View>
           </View>
         </View>
@@ -130,21 +125,17 @@ const styles = StyleSheet.create({
   innerContainer: {
     padding: 15,
     alignItems: 'center',
-    backgroundColor: appStyles.primaryColor,
     flexDirection: 'row',
     justifyContent: 'center',
     borderRadius: 10
   },
   text: {
-    color: appStyles.whiteColor,
     fontSize: 15,
     fontWeight: 'bold',
     padding: 10,
   },
   textInput: {
     height: 250,
-    backgroundColor: appStyles.whiteColor,
-    borderColor: appStyles.blackColor,
     borderWidth: 2,
     marginBottom: 20,
     fontSize: 16,
@@ -153,7 +144,6 @@ const styles = StyleSheet.create({
   },
   outputContainer: {
     flexDirection: 'row',
-    backgroundColor: appStyles.darkGray,
     marginTop: 10
   }
 })
