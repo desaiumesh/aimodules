@@ -28,7 +28,7 @@ const SpeechAIScreen = () => {
   const [theme, setTheme] = useState();
 
   const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
- const[playFile, setPlayFile] = useState(true);
+ const[pauseFile, setPauseFile] = useState(true);
 
   const appTheme = useTheme();
 
@@ -59,6 +59,7 @@ const SpeechAIScreen = () => {
 
   useEffect(() => {
 
+    setPauseFile(true);
     setTheme(appTheme);
 
     allLanguageData.forEach(element => {
@@ -120,7 +121,7 @@ const SpeechAIScreen = () => {
 
   //sets up speechrecognizer and audio stream
   const initializeAudio = async () => {
-    setPlayFile(true);
+    setPauseFile(true);
 
     if (!selectedSource) {
       alert("Please select source language");
@@ -219,28 +220,23 @@ const SpeechAIScreen = () => {
 
     const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
     const targetVoice = targetLanguageObj.Voice;
+  
+    speechConfig.speechSynthesisVoiceName = targetVoice;
     console.log(targetVoice);
-
-    speechConfig.VoiceName = targetVoice;
 
     var stream = AudioOutputStream.createPullStream();
     let streamConfig = AudioConfig.fromStreamOutput(stream);
-
 
     let speechSynthesizer = new SpeechSynthesizer(speechConfig, streamConfig);
 
     // The event synthesis completed signals that the synthesis is completed.
     speechSynthesizer.synthesisCompleted = async function (s, e) {
       console.log("synthesisCompleted");
-      console.log("(synthesized)  Reason: " + ResultReason[e.result.reason] + " Audio length: " + e.result.audioData.byteLength);
-
-      console.log(stream.format);
+    
       var arrayBufferData = new ArrayBuffer(320000);
-      console.log("define bytes1");
       let st = await stream.read(arrayBufferData);
-      console.log("stream read length");
+    
       console.log(arrayBufferData.byteLength);
-
 
       console.log("write to file");
       var RNFS = require('react-native-fs');
@@ -260,7 +256,7 @@ const SpeechAIScreen = () => {
       console.log("synthesisCompleted1");
 
       setStoredFile(path);
-      setPlayFile(false);
+      setPauseFile(false);
     };
 
     // The synthesis started event signals that the synthesis is started.
@@ -345,9 +341,9 @@ const SpeechAIScreen = () => {
           source={{uri: 'file:///data/user/0/com.aimodules/files/aiaudio6.mp3'}}
           shouldPlay={false}
           resizeMode="cover"
-          style={{ width: 300, height: 300 }}
+          style={{ width: 1, height: 1 }}
           isMuted={false}
-          paused={playFile} />
+          paused={pauseFile} />
 
       </ScrollView>
     </View>
