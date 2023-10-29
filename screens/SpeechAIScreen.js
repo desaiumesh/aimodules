@@ -1,7 +1,7 @@
 import React, { Component, useState, useEffect } from 'react';
 import {
   ImageBackground, PermissionsAndroid, StyleSheet,
-  View, TouchableOpacity, LogBox, ScrollView
+  View, TouchableOpacity, LogBox, ScrollView, TouchableHighlight
 } from 'react-native';
 import 'react-native-get-random-values';
 import 'node-libs-react-native/globals';
@@ -27,7 +27,8 @@ const RESOURCE_REGION = "australiaeast";
 const SpeechAIScreen = () => {
   const [theme, setTheme] = useState();
 
- const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
+  const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
+ const[playFile, setPlayFile] = useState(true);
 
   const appTheme = useTheme();
 
@@ -119,6 +120,7 @@ const SpeechAIScreen = () => {
 
   //sets up speechrecognizer and audio stream
   const initializeAudio = async () => {
+    setPlayFile(true);
 
     if (!selectedSource) {
       alert("Please select source language");
@@ -232,42 +234,6 @@ const SpeechAIScreen = () => {
       console.log("synthesisCompleted");
       console.log("(synthesized)  Reason: " + ResultReason[e.result.reason] + " Audio length: " + e.result.audioData.byteLength);
 
-
-      /*
-         // Reads(pulls) data from the stream
-         const byteArrays = ArrayBuffer [32000];
-         console.log("step1");
-         let filledSize = 0;
-         let totalSize = 0;
-         while ((filledSize = stream.read(byteArrays)) > 0)
-         {
-             console.log(filledSize);
-             totalSize += filledSize;
-         }
-
-         console.log("total size");
-         console.log(totalSize); 
-
-      let data =e.result.audioData;
-      
-      console.log("result format");
-      console.log(data);
-      console.log(e.result.audioData.format);
-     
-      console.log("stream format");
-      console.log(stream.format);
-
-      console.log("define bytes");
-      var arrayBufferData = new ArrayBuffer(e.result.audioData.byteLength);
-      console.log("define bytes1");
-      let st = await stream.read(arrayBufferData);
-
-      console.log("stream read length");
-      console.log(arrayBufferData.byteLength);
-      console.log(stream.format);
-
-      console.log("stream read");
-      console.log(arrayBufferData);*/
       console.log(stream.format);
       var arrayBufferData = new ArrayBuffer(320000);
       console.log("define bytes1");
@@ -282,8 +248,7 @@ const SpeechAIScreen = () => {
       console.log(path);
 
       var bt = Buffer.from(arrayBufferData).toString('base64');
-      //console.log(bt);
-      // write the file
+
       RNFS.writeFile(path, bt, 'base64')
         .then((success) => {
           console.log('FILE WRITTEN!');
@@ -295,6 +260,7 @@ const SpeechAIScreen = () => {
       console.log("synthesisCompleted1");
 
       setStoredFile(path);
+      setPlayFile(false);
     };
 
     // The synthesis started event signals that the synthesis is started.
@@ -323,24 +289,6 @@ const SpeechAIScreen = () => {
         speechSynthesizer.close();
         speechSynthesizer = undefined;
 
-        /*
-        if (result.reason === ResultReason.SynthesizingAudioCompleted) {
-
-          console.log(result)
-
-          console.log('Synthesis Audio.');
-          console.log(stream.format);
-
-          console.log('Synthesis finished.');
-
-        }
-        else if (result.reason === ResultReason.Canceled) {
-          console.log('Synthesis Canceled.');
-        }
-
-        speechSynthesizer.close();
-        speechSynthesizer = undefined;
-*/
       },
       function (err) {
         console.log(err);
@@ -392,15 +340,16 @@ const SpeechAIScreen = () => {
       <ScrollView>
         <Text style={styles.textSource} multiline={true}>{sourceLanguagesText}</Text>
         <Text style={styles.textSource} multiline={true}>{targetLanguagesText}</Text>
+        
+      <Video
+          source={{uri: 'file:///data/user/0/com.aimodules/files/aiaudio6.mp3'}}
+          shouldPlay={false}
+          resizeMode="cover"
+          style={{ width: 300, height: 300 }}
+          isMuted={false}
+          paused={playFile} />
 
       </ScrollView>
-
-      <Video
-        source={require('../assets/time.wav')}
-        shouldPlay={true}
-        resizeMode="cover"
-        style={{ width: 300, height: 300 }}
-        isMuted={false} />
     </View>
   </ImageBackground>);
 };
