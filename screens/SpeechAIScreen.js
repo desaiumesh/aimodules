@@ -17,7 +17,8 @@ import { appStyles } from '../styles/appStyle';
 LogBox.ignoreLogs(['new NativeEventEmitter']);
 import { Text, TextInput, Button } from 'react-native-paper';
 import { useTheme } from 'react-native-paper';
-import RNFS from 'react-native-fs';
+import Video from 'react-native-video';
+
 
 
 const RESOURCE_KEY = "8b2ccf3a18f44b1182d976b6329d68ad";
@@ -25,6 +26,8 @@ const RESOURCE_REGION = "australiaeast";
 
 const SpeechAIScreen = () => {
   const [theme, setTheme] = useState();
+
+ const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
 
   const appTheme = useTheme();
 
@@ -228,7 +231,7 @@ const SpeechAIScreen = () => {
     speechSynthesizer.synthesisCompleted = async function (s, e) {
       console.log("synthesisCompleted");
       console.log("(synthesized)  Reason: " + ResultReason[e.result.reason] + " Audio length: " + e.result.audioData.byteLength);
-      
+
 
       /*
          // Reads(pulls) data from the stream
@@ -278,8 +281,8 @@ const SpeechAIScreen = () => {
       var path = RNFS.DocumentDirectoryPath + '/aiaudio6.mp3';
       console.log(path);
 
-      var bt= Buffer.from(arrayBufferData).toString('base64');
-      console.log(bt);
+      var bt = Buffer.from(arrayBufferData).toString('base64');
+      //console.log(bt);
       // write the file
       RNFS.writeFile(path, bt, 'base64')
         .then((success) => {
@@ -290,6 +293,8 @@ const SpeechAIScreen = () => {
         });
 
       console.log("synthesisCompleted1");
+
+      setStoredFile(path);
     };
 
     // The synthesis started event signals that the synthesis is started.
@@ -389,6 +394,13 @@ const SpeechAIScreen = () => {
         <Text style={styles.textSource} multiline={true}>{targetLanguagesText}</Text>
 
       </ScrollView>
+
+      <Video
+        source={require('../assets/time.wav')}
+        shouldPlay={true}
+        resizeMode="cover"
+        style={{ width: 300, height: 300 }}
+        isMuted={false} />
     </View>
   </ImageBackground>);
 };
