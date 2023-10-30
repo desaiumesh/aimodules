@@ -19,18 +19,19 @@ import { Text, TextInput, Button } from 'react-native-paper';
 import { useTheme } from 'react-native-paper';
 import Video from 'react-native-video';
 import { useFocusEffect } from '@react-navigation/native';
-
-
+import { useIsFocused } from "@react-navigation/native";
 
 const RESOURCE_KEY = "8b2ccf3a18f44b1182d976b6329d68ad";
 const RESOURCE_REGION = "australiaeast";
 
 const SpeechAIScreen = () => {
+
+  const isFocused = useIsFocused();
   const [theme, setTheme] = useState();
 
   const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
   const [pauseFile, setPauseFile] = useState(true);
-
+  const [muteFile, setMuteFile] = useState(true);
 
   const key = RESOURCE_KEY;
   const region = RESOURCE_REGION;
@@ -72,10 +73,13 @@ const SpeechAIScreen = () => {
     { key: '18', value: '', LanguageName: "French", LanguageGenderName: "French Male", LanguageCode: "fr", LocaleBCP47: "fr-FR", Voice: "fr-FR-HenriNeural" },
 
   ]
-  
+
   useEffect(() => {
 
-    setPauseFile(true);
+    if(isFocused){
+        setMuteFile(true);
+        setPauseFile(false);
+    }
 
     allLanguageData.forEach(element => {
 
@@ -102,7 +106,7 @@ const SpeechAIScreen = () => {
 
     });
 
-  }, []);
+  }, [isFocused]);
 
   //prompt for permissions if not granted
   const checkPermissions = async () => {
@@ -202,6 +206,8 @@ const SpeechAIScreen = () => {
           sourceLText = sourceLText + `${e?.result?.text}`;
           setSourceLanguagesText(sourceLText);
 
+          console.log(e?.result);
+
           for (let object of e?.result?.translations?.privMap?.privValues) {
             targetLText = targetLText + `${object}.`;
           }
@@ -275,6 +281,7 @@ const SpeechAIScreen = () => {
       console.log("synthesisCompleted1");
 
       setStoredFile(path);
+      setMuteFile(false);
       setPauseFile(false);
     };
 
@@ -361,7 +368,7 @@ const SpeechAIScreen = () => {
           shouldPlay={false}
           resizeMode="cover"
           style={{ width: 1, height: 1 }}
-          isMuted={false}
+          muted={muteFile}
           paused={pauseFile} />
 
       </ScrollView>

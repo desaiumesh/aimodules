@@ -28,6 +28,7 @@ const Header = ({ route, navigation, color }) => {
                 icon="menu"
                 onPress={openDrawer}
             />
+           
             <Appbar.Content color={theme.colors.light} title={route.name} />
 
             <Switch
