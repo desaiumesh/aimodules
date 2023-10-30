@@ -1,4 +1,4 @@
-import React, { Component, useState, useEffect } from 'react';
+import React, { Component, useState, useEffect, useLayoutEffect } from 'react';
 import {
   ImageBackground, PermissionsAndroid, StyleSheet,
   View, TouchableOpacity, LogBox, ScrollView, TouchableHighlight
@@ -18,6 +18,7 @@ LogBox.ignoreLogs(['new NativeEventEmitter']);
 import { Text, TextInput, Button } from 'react-native-paper';
 import { useTheme } from 'react-native-paper';
 import Video from 'react-native-video';
+import { useFocusEffect } from '@react-navigation/native';
 
 
 
@@ -28,9 +29,8 @@ const SpeechAIScreen = () => {
   const [theme, setTheme] = useState();
 
   const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
- const[pauseFile, setPauseFile] = useState(true);
+  const [pauseFile, setPauseFile] = useState(true);
 
-  const appTheme = useTheme();
 
   const key = RESOURCE_KEY;
   const region = RESOURCE_REGION;
@@ -55,28 +55,27 @@ const SpeechAIScreen = () => {
     { key: '2', value: '', LanguageName: "English", LanguageGenderName: "English (United States) Male", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-GuyNeural" },
     { key: '3', value: '', LanguageName: "Marathi", LanguageGenderName: "Marathi (India) Female", LanguageCode: "mr", LocaleBCP47: "mr-IN", Voice: "mr-IN-AarohiNeural" },
     { key: '4', value: '', LanguageName: "Marathi", LanguageGenderName: "Marathi (India) Male", LanguageCode: "mr", LocaleBCP47: "mr-IN", Voice: "mr-IN-ManoharNeural" },
-    { key: '5', value: '',LanguageName : "Kannada", LanguageGenderName : "Kannada (India) Female", LanguageCode : "kn", LocaleBCP47 : "kn-IN", Voice : "kn-IN-SapnaNeural" },
-    { key: '6', value: '',LanguageName : "Kannada", LanguageGenderName : "Kannada (India) Male", LanguageCode : "kn", LocaleBCP47 : "kn-IN", Voice : "kn-IN-GaganNeural" },
-    { key: '7', value: '',LanguageName : "Gujarati", LanguageGenderName : "Gujarati (India) Female", LanguageCode : "gu", LocaleBCP47 : "gu-IN", Voice : "gu-IN-DhwaniNeural" },
-    { key: '8', value: '',LanguageName : "Gujarati", LanguageGenderName : "Gujarati (India) Male", LanguageCode : "gu", LocaleBCP47 : "gu-IN", Voice : "gu-IN-NiranjanNeural" },
-    { key: '9', value: '',LanguageName : "Telugu", LanguageGenderName : "Telugu (India) Female", LanguageCode : "te", LocaleBCP47 : "te-IN", Voice : "te-IN-ShrutiNeural" },
-    { key: '10', value: '',LanguageName : "Telugu", LanguageGenderName : "Telugu (India) Male", LanguageCode : "te", LocaleBCP47 : "te-IN", Voice : "te-IN-MohanNeural" },
-    { key: '11', value: '',LanguageName : "Hindi", LanguageGenderName : "Hindi (India) Female", LanguageCode : "hi", LocaleBCP47 : "hi-IN", Voice : "hi-IN-SwaraNeural " },
-    { key: '12', value: '',LanguageName : "Hindi", LanguageGenderName : "Hindi (India) Male", LanguageCode : "hi", LocaleBCP47 : "hi-IN", Voice : "hi-IN-MadhurNeural" },
-    
-    { key: '13', value: '',LanguageName : "Urdu", LanguageGenderName : "Urdu (India) Female", LanguageCode : "ur", LocaleBCP47 : "ur-IN", Voice : "ur-IN-GulNeural" },
-    { key: '14', value: '',LanguageName : "Urdu", LanguageGenderName : "Urdu (India) Male", LanguageCode : "ur", LocaleBCP47 : "ur-IN", Voice : "ur-IN-SalmanNeural" },
-    { key: '15', value: '',LanguageName : "Spanish", LanguageGenderName : "Spanish (Argentina) Female", LanguageCode : "es", LocaleBCP47 : "es-AR", Voice : "es-AR-ElenaNeural" },
-    { key: '16', value: '',LanguageName : "Spanish", LanguageGenderName : "Spanish (Argentina) Male", LanguageCode : "es", LocaleBCP47 : "es-AR", Voice : "es-AR-TomasNeural" },
-    { key: '17', value: '',LanguageName : "French", LanguageGenderName : "French Female", LanguageCode : "fr", LocaleBCP47 : "fr-FR", Voice : "fr-FR-DeniseNeural" },
-    { key: '18', value: '',LanguageName : "French", LanguageGenderName : "French Male", LanguageCode : "fr", LocaleBCP47 : "fr-FR", Voice : "fr-FR-HenriNeural" },
-   
-  ]
+    { key: '5', value: '', LanguageName: "Kannada", LanguageGenderName: "Kannada (India) Female", LanguageCode: "kn", LocaleBCP47: "kn-IN", Voice: "kn-IN-SapnaNeural" },
+    { key: '6', value: '', LanguageName: "Kannada", LanguageGenderName: "Kannada (India) Male", LanguageCode: "kn", LocaleBCP47: "kn-IN", Voice: "kn-IN-GaganNeural" },
+    { key: '7', value: '', LanguageName: "Gujarati", LanguageGenderName: "Gujarati (India) Female", LanguageCode: "gu", LocaleBCP47: "gu-IN", Voice: "gu-IN-DhwaniNeural" },
+    { key: '8', value: '', LanguageName: "Gujarati", LanguageGenderName: "Gujarati (India) Male", LanguageCode: "gu", LocaleBCP47: "gu-IN", Voice: "gu-IN-NiranjanNeural" },
+    { key: '9', value: '', LanguageName: "Telugu", LanguageGenderName: "Telugu (India) Female", LanguageCode: "te", LocaleBCP47: "te-IN", Voice: "te-IN-ShrutiNeural" },
+    { key: '10', value: '', LanguageName: "Telugu", LanguageGenderName: "Telugu (India) Male", LanguageCode: "te", LocaleBCP47: "te-IN", Voice: "te-IN-MohanNeural" },
+    { key: '11', value: '', LanguageName: "Hindi", LanguageGenderName: "Hindi (India) Female", LanguageCode: "hi", LocaleBCP47: "hi-IN", Voice: "hi-IN-SwaraNeural " },
+    { key: '12', value: '', LanguageName: "Hindi", LanguageGenderName: "Hindi (India) Male", LanguageCode: "hi", LocaleBCP47: "hi-IN", Voice: "hi-IN-MadhurNeural" },
 
+    { key: '13', value: '', LanguageName: "Urdu", LanguageGenderName: "Urdu (India) Female", LanguageCode: "ur", LocaleBCP47: "ur-IN", Voice: "ur-IN-GulNeural" },
+    { key: '14', value: '', LanguageName: "Urdu", LanguageGenderName: "Urdu (India) Male", LanguageCode: "ur", LocaleBCP47: "ur-IN", Voice: "ur-IN-SalmanNeural" },
+    { key: '15', value: '', LanguageName: "Spanish", LanguageGenderName: "Spanish (Argentina) Female", LanguageCode: "es", LocaleBCP47: "es-AR", Voice: "es-AR-ElenaNeural" },
+    { key: '16', value: '', LanguageName: "Spanish", LanguageGenderName: "Spanish (Argentina) Male", LanguageCode: "es", LocaleBCP47: "es-AR", Voice: "es-AR-TomasNeural" },
+    { key: '17', value: '', LanguageName: "French", LanguageGenderName: "French Female", LanguageCode: "fr", LocaleBCP47: "fr-FR", Voice: "fr-FR-DeniseNeural" },
+    { key: '18', value: '', LanguageName: "French", LanguageGenderName: "French Male", LanguageCode: "fr", LocaleBCP47: "fr-FR", Voice: "fr-FR-HenriNeural" },
+
+  ]
+  
   useEffect(() => {
 
     setPauseFile(true);
-    setTheme(appTheme);
 
     allLanguageData.forEach(element => {
 
@@ -240,7 +239,7 @@ const SpeechAIScreen = () => {
 
     const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
     const targetVoice = targetLanguageObj.Voice;
-  
+
     speechConfig.speechSynthesisVoiceName = targetVoice;
     console.log(targetVoice);
 
@@ -252,10 +251,10 @@ const SpeechAIScreen = () => {
     // The event synthesis completed signals that the synthesis is completed.
     speechSynthesizer.synthesisCompleted = async function (s, e) {
       console.log("synthesisCompleted");
-    
+
       var arrayBufferData = new ArrayBuffer(320000);
       let st = await stream.read(arrayBufferData);
-    
+
       console.log(arrayBufferData.byteLength);
 
       console.log("write to file");
@@ -356,9 +355,9 @@ const SpeechAIScreen = () => {
       <ScrollView>
         <Text style={styles.textSource} multiline={true}>{sourceLanguagesText}</Text>
         <Text style={styles.textSource} multiline={true}>{targetLanguagesText}</Text>
-        
-      <Video
-          source={{uri: 'file:///data/user/0/com.aimodules/files/aiaudio6.mp3'}}
+
+        <Video
+          source={{ uri: 'file:///data/user/0/com.aimodules/files/aiaudio6.mp3' }}
           shouldPlay={false}
           resizeMode="cover"
           style={{ width: 1, height: 1 }}

@@ -1,24 +1,40 @@
-import { Appbar, useTheme } from 'react-native-paper';
+import React from 'react';
+import { Appbar, useTheme, Switch } from 'react-native-paper';
+import { PreferencesContext } from './PreferencesContext';
 
-const Header = ({ route, navigation }) => {
+const Header = ({ route, navigation, color }) => {
+
+    const { toggleTheme, isThemeDark } = React.useContext(PreferencesContext);
+
     const theme = useTheme();
     const openDrawer = () => {
         navigation.openDrawer();
     };
 
+    const headerProps = {};
+
+    if (Platform.OS === 'android') {
+        headerProps.statusBarHeight = 0;
+    };
+
     return (
-        <Appbar.Header
+        <Appbar.Header {...headerProps} statusBarHeight={0}
             safeAreaInsets={{}}
             style={{
-                backgroundColor: theme.colors.darkPrimary
+                backgroundColor: color
             }}>
-          
+
             <Appbar.Action
                 icon="menu"
-                color={theme.colors.light}
                 onPress={openDrawer}
             />
             <Appbar.Content color={theme.colors.light} title={route.name} />
+
+            <Switch
+                color={'red'}
+                value={isThemeDark}
+                onValueChange={toggleTheme}
+            />
         </Appbar.Header>
     );
 };
