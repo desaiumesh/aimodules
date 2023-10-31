@@ -16,6 +16,7 @@ import { useTheme } from 'react-native-paper';
 import Header from './components/Header';
 import { StatusBar, View } from 'react-native';
 import { PreferencesContext } from './components/PreferencesContext';
+import VisionAIScreen from './screens/VisionAIScreen';
 
 const darkColors = {
   "colors": {
@@ -161,7 +162,7 @@ function App(): JSX.Element {
           <Drawer.Screen name="Home" component={HomeAIScreen} />
           <Drawer.Screen name="Text" component={TextAIScreen} />
           <Drawer.Screen name="Speech" component={SpeechAIScreen} />
-          <Drawer.Screen name="AppMic" component={App_mic_input} />
+          <Drawer.Screen name="Vision" component={VisionAIScreen} />
 
         </Drawer.Navigator>
       </NavigationContainer>

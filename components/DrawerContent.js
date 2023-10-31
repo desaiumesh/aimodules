@@ -22,7 +22,7 @@ const DrawerContent = () => {
                 <Drawer.Item label="Home" icon="home" onPress={() => { navigation.navigate('Home') }} />
                 <Drawer.Item label="Text" icon="text" onPress={() => { navigation.navigate('Text') }} />
                 <Drawer.Item label="Speech" icon="microphone" onPress={() => { navigation.navigate('Speech') }} />
-                <Drawer.Item label="AppMic" icon="laptop" onPress={() => { navigation.navigate('AppMic') }} />
+                <Drawer.Item label="Vision" icon="laptop" onPress={() => { navigation.navigate('Vision') }} />
                 <Drawer.Item label="Language" icon="heart" onPress={() => { navigation.navigate('Speech') }} />
 
             </View>
