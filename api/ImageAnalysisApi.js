@@ -5,23 +5,19 @@ const RESOURCE_REGION="australiaeast";
 
 const baseUrl = `https://${RESOURCE_REGION}.api.cognitive.microsoft.com`;
 
-const ImageAnalysisVApi = ({text}) => {
-  
-    const configurationObject = {
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
-        },
-        data: `{
-            "url": "https://learn.microsoft.com/azure/ai-services/computer-vision/media/quickstarts/presentation.png"
-          }`,
-        url: `${baseUrl}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&features=Tags&language=en&gender-neutral-caption=False`,
-    };
+const ImageAnalysisVApi = async ({base64}) => {
+
+    const url= `${baseUrl}/computervision/imageanalysis:analyze?api-version=2023-02-01-preview&`+
+    `features=Tags,Objects,People&language=en&gender-neutral-caption=False`;
 
     try {
-        const res = axios(configurationObject);
-        return res;
+        const response = await axios.post(url, base64, {
+            headers: {
+              "Content-Type": "application/octet-stream",
+              'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
+            },
+          });
+        return response;
     } catch (error) {
         return error;
     } 
