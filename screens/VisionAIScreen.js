@@ -9,8 +9,8 @@ const VisionAIScreen = () => {
     const [base64Data, setBase64Data] = useState();
     const [imageFile, setImageFile] = useState();
     const [tags, setTags] = useState();
-    const [imageCanvas, setImageCanvas] = useState();
     const [boundingBoxes, setBoundingBoxes] = useState([]);
+    const [objectBoundingBoxes, setObjectBoundingBoxes] = useState([]);
     const [imageWidth, setImageWidth] = useState();
     const [imageHeight, setImageHeight] = useState();
 
@@ -64,6 +64,7 @@ const VisionAIScreen = () => {
             setImageFile(result?.assets[0].uri);
             setTags([]);
             setBoundingBoxes([]);
+            setObjectBoundingBoxes([]);
             setImageWidth(result?.assets[0].width);
             setImageHeight(result?.assets[0].height);
 
@@ -91,6 +92,7 @@ const VisionAIScreen = () => {
             setImageFile(result?.assets[0].uri);
             setTags([]);
             setBoundingBoxes([]);
+            setObjectBoundingBoxes([]);
 
             setImageWidth(result?.assets[0].width);
             setImageHeight(result?.assets[0].height);
@@ -113,18 +115,24 @@ const VisionAIScreen = () => {
             setTags(tags);
 
             const filteredBoundingBoxes = resp?.data?.peopleResult?.values?.filter(st => st.confidence > 0.70);
-
             const boundingBoxes = filteredBoundingBoxes?.map((item) => item.boundingBox);
 
             if (boundingBoxes?.length == 0) {
                 setBoundingBoxes([]);
             }
             else {
-
                 setBoundingBoxes(boundingBoxes);
             }
 
-            console.log(JSON.stringify(boundingBoxes));
+            const filteredObjectBoundingBoxes = resp?.data?.objectsResult?.values;
+            const objectBoundingBoxes = filteredObjectBoundingBoxes?.filter((item) => item.tags[0].confidence > 0.5);
+
+            if (objectBoundingBoxes?.length == 0) {
+                setObjectBoundingBoxes([]);
+            }
+            else {
+                setObjectBoundingBoxes(objectBoundingBoxes);
+            }
 
         } catch (error) {
             console.log(error);
@@ -145,18 +153,14 @@ const VisionAIScreen = () => {
         canvas.width = 300;
         canvas.height = 400;
 
-        setImageCanvas(canvas);
-
         const context = canvas.getContext('2d');
         const image2 = new CanvasImage(canvas);
         image2.src = 'data:image/jpeg;base64,' + base64Data;
-        console.log("image width: " + image2.width + " image height: " + image2.height);
 
         image2.addEventListener('load', () => {
             context.drawImage(image2, 0, 0, canvas.width, canvas.height);
 
             if (!boundingBoxes?.length == 0) {
-                console.log("draw");
 
                 boundingBoxes.forEach(element => {
 
@@ -166,15 +170,43 @@ const VisionAIScreen = () => {
                         percentBh = (element.h * 100) / imageHeight;
 
                     let finalBx = (percentBx * canvas.width) / 100,
-                        finalBy = (percentBy * canvas.height) / 100, 
+                        finalBy = (percentBy * canvas.height) / 100,
 
-                        finalBw = (percentBw * canvas.width) / 100, 
-                        finalBh = (percentBh * canvas.height) / 100; 
+                        finalBw = (percentBw * canvas.width) / 100,
+                        finalBh = (percentBh * canvas.height) / 100;
 
                     context.strokeStyle = "purple";
-                    context.lineWidth = 3;
+                    context.lineWidth = 2;
                     context.beginPath();
-                    context.rect(finalBx, finalBy,  finalBw, finalBh);
+                    context.rect(finalBx, finalBy, finalBw, finalBh);
+                    context.closePath();
+                    context.stroke();
+
+                });
+            }
+
+            if (!objectBoundingBoxes?.length == 0) {
+
+                objectBoundingBoxes.forEach(element => {
+
+                    let percentBx = (100 * (element.boundingBox.x / imageWidth)),
+                        percentBy = (100 * (element.boundingBox.y / imageHeight)),
+                        percentBw = (element.boundingBox.w * 100) / imageWidth,
+                        percentBh = (element.boundingBox.h * 100) / imageHeight;
+
+                    let finalBx = (percentBx * canvas.width) / 100,
+                        finalBy = (percentBy * canvas.height) / 100,
+
+                        finalBw = (percentBw * canvas.width) / 100,
+                        finalBh = (percentBh * canvas.height) / 100;
+
+                    context.strokeStyle = "green";
+                    context.fillStyle = "blue";
+                    context.font = "bold 12px Mozer";
+                    context.lineWidth = 2;
+                    context.beginPath();
+                    context.rect(finalBx, finalBy, finalBw, finalBh);
+                    context.fillText(element.tags[0].name, finalBx, finalBy);
                     context.closePath();
                     context.stroke();
 
