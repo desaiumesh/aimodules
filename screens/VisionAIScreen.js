@@ -1,6 +1,6 @@
 import { Image, ImageBackground, StyleSheet, View, PermissionsAndroid, ScrollView, Image as RNimage } from 'react-native'
 import React, { useRef, useState } from 'react'
-import { Text, Button } from 'react-native-paper'
+import { Text, Button, Checkbox, IconButton } from 'react-native-paper'
 import { ImageAnalysisVApi } from '../api/ImageAnalysisApi';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import Canvas, { Image as CanvasImage } from 'react-native-canvas';
@@ -13,6 +13,7 @@ const VisionAIScreen = () => {
     const [objectBoundingBoxes, setObjectBoundingBoxes] = useState([]);
     const [imageWidth, setImageWidth] = useState();
     const [imageHeight, setImageHeight] = useState();
+    const [checked, setChecked] = React.useState(false);
 
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -62,11 +63,9 @@ const VisionAIScreen = () => {
             const result = await launchCamera(options);
             setBase64Data(result?.assets[0].base64);
             setImageFile(result?.assets[0].uri);
-            setTags([]);
-            setBoundingBoxes([]);
-            setObjectBoundingBoxes([]);
             setImageWidth(result?.assets[0].width);
             setImageHeight(result?.assets[0].height);
+            Reset();
 
         } catch (error) {
             console.log(error);
@@ -90,17 +89,21 @@ const VisionAIScreen = () => {
             const result = await launchImageLibrary(options);
             setBase64Data(result?.assets[0].base64);
             setImageFile(result?.assets[0].uri);
-            setTags([]);
-            setBoundingBoxes([]);
-            setObjectBoundingBoxes([]);
-
             setImageWidth(result?.assets[0].width);
             setImageHeight(result?.assets[0].height);
+            Reset();
 
         } catch (error) {
             console.log(error);
 
         }
+    };
+
+    const Reset = () => {
+        setTags([]);
+        setBoundingBoxes([]);
+        setObjectBoundingBoxes([]);
+        setChecked(false);
     };
 
     const analyse = async () => {
@@ -125,7 +128,7 @@ const VisionAIScreen = () => {
             }
 
             const filteredObjectBoundingBoxes = resp?.data?.objectsResult?.values;
-            const objectBoundingBoxes = filteredObjectBoundingBoxes?.filter((item) => item.tags[0].confidence > 0.5);
+            const objectBoundingBoxes = filteredObjectBoundingBoxes?.filter((item) => item.tags[0].confidence > 0.5 && item.tags[0].name != "person");
 
             if (objectBoundingBoxes?.length == 0) {
                 setObjectBoundingBoxes([]);
@@ -185,7 +188,7 @@ const VisionAIScreen = () => {
                 });
             }
 
-            if (!objectBoundingBoxes?.length == 0) {
+            if (!objectBoundingBoxes?.length == 0 && checked == false) {
 
                 objectBoundingBoxes.forEach(element => {
 
@@ -225,14 +228,20 @@ const VisionAIScreen = () => {
 
             <View style={styles.container}>
                 <Canvas ref={_handleCanvas} />
+
                 <View style={styles.innerContainer}>
-                    <Button icon="camera" mode="contained" onPress={() => { OpenCamera() }}>Camera</Button>
-                    <Button icon="view-gallery" mode="contained" onPress={() => { OpenGallery() }}>Gallery</Button>
+                    <IconButton icon="camera" mode="contained" onPress={() => { OpenCamera() }}></IconButton>
+                    <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
+                    <IconButton icon="robot" mode="contained" onPress={() => { analyse() }}>ANALYSE</IconButton>
                 </View>
-                <Button icon="text" mode="contained" onPress={() => { analyse() }}>ANALYSE</Button>
                 <ScrollView>
                     <Text style={styles.text}>{tags?.map(u => u).join(", ")}</Text>
                 </ScrollView>
+                <Checkbox.Item label="People only" status={checked ? 'checked' : 'unchecked'}
+                    onPress={() => {
+                        setChecked(!checked);
+                    }}
+                />
             </View>
         </ImageBackground>
     )
@@ -260,8 +269,8 @@ const styles = StyleSheet.create({
         padding: 15,
         alignItems: 'center',
         flexDirection: 'row',
-        justifyContent: 'center',
-        borderRadius: 10
+        justifyContent: 'space-between',
+        gap: 20,
     },
     text: {
         fontSize: 15,

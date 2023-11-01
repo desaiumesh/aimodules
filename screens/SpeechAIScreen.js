@@ -356,7 +356,7 @@ const SpeechAIScreen = () => {
       <View style={styles.buttonConatiner}>
 
         <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { initializeAudio() }}>Start</Button>
-        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
+        <Button style={styles.button} icon="microphone-off" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
 
       </View>
       <ScrollView>
