@@ -4,6 +4,7 @@ import { Text, Button, Checkbox, IconButton } from 'react-native-paper'
 import { ImageAnalysisVApi } from '../api/ImageAnalysisApi';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import Canvas, { Image as CanvasImage } from 'react-native-canvas';
+import Slider from '@react-native-community/slider';
 
 const VisionAIScreen = () => {
     const [base64Data, setBase64Data] = useState();
@@ -14,6 +15,8 @@ const VisionAIScreen = () => {
     const [imageWidth, setImageWidth] = useState();
     const [imageHeight, setImageHeight] = useState();
     const [checked, setChecked] = React.useState(false);
+    const [objectConfidence, setObjectConfidence] = React.useState(0.50);
+    const [personConfidence, setPersonConfidence] = React.useState(0.70);
 
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -112,14 +115,12 @@ const VisionAIScreen = () => {
 
             var base64 = Buffer.from(base64Data, 'base64');
             const resp = await ImageAnalysisVApi({ base64 });
-            console.log(JSON.stringify(resp?.data));
 
             const tags = resp?.data?.tagsResult?.values?.map((item) => item.name);
             setTags(tags);
 
-            const filteredBoundingBoxes = resp?.data?.peopleResult?.values?.filter(st => st.confidence > 0.70);
-            const boundingBoxes = filteredBoundingBoxes?.map((item) => item.boundingBox);
-
+            const boundingBoxes = resp?.data?.peopleResult?.values;
+         
             if (boundingBoxes?.length == 0) {
                 setBoundingBoxes([]);
             }
@@ -128,7 +129,7 @@ const VisionAIScreen = () => {
             }
 
             const filteredObjectBoundingBoxes = resp?.data?.objectsResult?.values;
-            const objectBoundingBoxes = filteredObjectBoundingBoxes?.filter((item) => item.tags[0].confidence > 0.5 && item.tags[0].name != "person");
+            const objectBoundingBoxes = filteredObjectBoundingBoxes?.filter((item) =>item.tags[0].name != "person");
 
             if (objectBoundingBoxes?.length == 0) {
                 setObjectBoundingBoxes([]);
@@ -158,14 +159,24 @@ const VisionAIScreen = () => {
 
         const context = canvas.getContext('2d');
         const image2 = new CanvasImage(canvas);
-        image2.src = 'data:image/jpeg;base64,' + base64Data;
+
+        if  (base64Data == undefined) {
+            image2.src = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';
+        }
+        else{
+            image2.src = 'data:image/jpeg;base64,' + base64Data;
+        }
 
         image2.addEventListener('load', () => {
             context.drawImage(image2, 0, 0, canvas.width, canvas.height);
 
             if (!boundingBoxes?.length == 0) {
 
-                boundingBoxes.forEach(element => {
+                const pBoundingBoxes = boundingBoxes?.filter((item) => item.confidence >= personConfidence);
+
+                const personboundingBoxes = pBoundingBoxes?.map((item) => item.boundingBox);
+        
+                personboundingBoxes.forEach(element => {
 
                     let percentBx = (100 * (element.x / imageWidth)),
                         percentBy = (100 * (element.y / imageHeight)),
@@ -190,7 +201,9 @@ const VisionAIScreen = () => {
 
             if (!objectBoundingBoxes?.length == 0 && checked == false) {
 
-                objectBoundingBoxes.forEach(element => {
+                const objBoundingBoxes = objectBoundingBoxes?.filter((item) => item.tags[0].confidence >= objectConfidence);
+              
+                objBoundingBoxes.forEach(element => {
 
                     let percentBx = (100 * (element.boundingBox.x / imageWidth)),
                         percentBy = (100 * (element.boundingBox.y / imageHeight)),
@@ -228,12 +241,38 @@ const VisionAIScreen = () => {
 
             <View style={styles.container}>
                 <Canvas ref={_handleCanvas} />
-
                 <View style={styles.innerContainer}>
                     <IconButton icon="camera" mode="contained" onPress={() => { OpenCamera() }}></IconButton>
                     <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
                     <IconButton icon="robot" mode="contained" onPress={() => { analyse() }}>ANALYSE</IconButton>
                 </View>
+
+                <View style={styles.innerSliderContainer} >
+                    <Text>Object:</Text>
+                    <Text>{objectConfidence.toFixed(3)}</Text>
+                    <Slider
+                        style={{ width: 200, height: 40 }}
+                        step={0.1}
+                        minimumValue={0}
+                        maximumValue={1}
+                        value={objectConfidence}
+                        onValueChange={(value) => { setObjectConfidence(value) }}
+                    />
+                </View>
+
+                <View style={styles.innerSliderContainer} >
+                    <Text>Person:</Text>
+                    <Text>{personConfidence.toFixed(3)}</Text>
+                    <Slider
+                        style={{ width: 200, height: 40 }}
+                        step={0.1}
+                        minimumValue={0}
+                        maximumValue={1}
+                        value={personConfidence}
+                        onValueChange={(value) => { setPersonConfidence(value) }}
+                    />
+                </View>
+
                 <ScrollView>
                     <Text style={styles.text}>{tags?.map(u => u).join(", ")}</Text>
                 </ScrollView>
@@ -266,11 +305,16 @@ const styles = StyleSheet.create({
         opacity: 0.3
     },
     innerContainer: {
-        padding: 15,
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'space-between',
         gap: 20,
+    },
+    innerSliderContainer: {
+        alignItems: 'center',
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 10,
     },
     text: {
         fontSize: 15,
