@@ -1,5 +1,5 @@
 import { Image, ImageBackground, StyleSheet, View, PermissionsAndroid, ScrollView, Image as RNimage } from 'react-native'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { Text, Button } from 'react-native-paper'
 import { ImageAnalysisVApi } from '../api/ImageAnalysisApi';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
@@ -9,6 +9,10 @@ const VisionAIScreen = () => {
     const [base64Data, setBase64Data] = useState();
     const [imageFile, setImageFile] = useState();
     const [tags, setTags] = useState();
+    const [imageCanvas, setImageCanvas] = useState();
+    const [boundingBoxes, setBoundingBoxes] = useState([]);
+    const [imageWidth, setImageWidth] = useState();
+    const [imageHeight, setImageHeight] = useState();
 
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -57,6 +61,11 @@ const VisionAIScreen = () => {
         try {
             const result = await launchCamera(options);
             setBase64Data(result?.assets[0].base64);
+            setImageFile(result?.assets[0].uri);
+            setTags([]);
+            setBoundingBoxes([]);
+            setImageWidth(result?.assets[0].width);
+            setImageHeight(result?.assets[0].height);
 
         } catch (error) {
             console.log(error);
@@ -80,6 +89,11 @@ const VisionAIScreen = () => {
             const result = await launchImageLibrary(options);
             setBase64Data(result?.assets[0].base64);
             setImageFile(result?.assets[0].uri);
+            setTags([]);
+            setBoundingBoxes([]);
+
+            setImageWidth(result?.assets[0].width);
+            setImageHeight(result?.assets[0].height);
 
         } catch (error) {
             console.log(error);
@@ -92,14 +106,25 @@ const VisionAIScreen = () => {
         try {
 
             var base64 = Buffer.from(base64Data, 'base64');
-
             const resp = await ImageAnalysisVApi({ base64 });
+            console.log(JSON.stringify(resp?.data));
 
             const tags = resp?.data?.tagsResult?.values?.map((item) => item.name);
             setTags(tags);
-            console.log(JSON.stringify(resp?.data));
 
-            console.log(tags);
+            const filteredBoundingBoxes = resp?.data?.peopleResult?.values?.filter(st => st.confidence > 0.70);
+
+            const boundingBoxes = filteredBoundingBoxes?.map((item) => item.boundingBox);
+
+            if (boundingBoxes?.length == 0) {
+                setBoundingBoxes([]);
+            }
+            else {
+
+                setBoundingBoxes(boundingBoxes);
+            }
+
+            console.log(JSON.stringify(boundingBoxes));
 
         } catch (error) {
             console.log(error);
@@ -110,30 +135,53 @@ const VisionAIScreen = () => {
 
     };
 
+
     const _handleCanvas = (canvas) => {
 
         if (!(canvas instanceof Canvas)) {
             return;
-          }
+        }
 
-          canvas.width = 300;
-          canvas.height = 400;
+        canvas.width = 300;
+        canvas.height = 400;
 
-          const context = canvas.getContext('2d');
-          const image2 = new CanvasImage(canvas);
-          image2.src ='data:image/jpeg;base64,'+base64Data;
-          image2.addEventListener('load', () => {
+        setImageCanvas(canvas);
 
-            context.drawImage(image2,0,0,canvas.width,canvas.height);
-            context.fillStyle = 'purple';
-            context.lineWidth = 3;
-            context.beginPath();
-            context.rect(150, 70, 50, 50);  
-            context.closePath();
-            context.stroke();
-    
-         })
-      
+        const context = canvas.getContext('2d');
+        const image2 = new CanvasImage(canvas);
+        image2.src = 'data:image/jpeg;base64,' + base64Data;
+        console.log("image width: " + image2.width + " image height: " + image2.height);
+
+        image2.addEventListener('load', () => {
+            context.drawImage(image2, 0, 0, canvas.width, canvas.height);
+
+            if (!boundingBoxes?.length == 0) {
+                console.log("draw");
+
+                boundingBoxes.forEach(element => {
+
+                    let percentBx = (100 * (element.x / imageWidth)),
+                        percentBy = (100 * (element.y / imageHeight)),
+                        percentBw = (element.w * 100) / imageWidth,
+                        percentBh = (element.h * 100) / imageHeight;
+
+                    let finalBx = (percentBx * canvas.width) / 100,
+                        finalBy = (percentBy * canvas.height) / 100, 
+
+                        finalBw = (percentBw * canvas.width) / 100, 
+                        finalBh = (percentBh * canvas.height) / 100; 
+
+                    context.strokeStyle = "purple";
+                    context.lineWidth = 3;
+                    context.beginPath();
+                    context.rect(finalBx, finalBy,  finalBw, finalBh);
+                    context.closePath();
+                    context.stroke();
+
+                });
+            }
+        })
+
     };
 
 
@@ -144,8 +192,8 @@ const VisionAIScreen = () => {
             resizeMode="cover">
 
             <View style={styles.container}>
-                   <Canvas ref={_handleCanvas}/>
-                   <View style={styles.innerContainer}>
+                <Canvas ref={_handleCanvas} />
+                <View style={styles.innerContainer}>
                     <Button icon="camera" mode="contained" onPress={() => { OpenCamera() }}>Camera</Button>
                     <Button icon="view-gallery" mode="contained" onPress={() => { OpenGallery() }}>Gallery</Button>
                 </View>
