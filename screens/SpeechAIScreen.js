@@ -439,6 +439,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     borderRadius: 10,
     padding: 5,
+    fontWeight: 'bold',
   },
   button: {
     margin: 20,

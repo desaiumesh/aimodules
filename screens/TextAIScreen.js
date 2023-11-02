@@ -90,16 +90,16 @@ const TextAIScreen = () => {
           <Button icon="text" mode="contained" onPress={() => { analyseText() }}>ANALYSE</Button>
           <View>
             <View style={styles.outputContainer}>
-              <Text> Language: </Text>
-              <Text>{language} </Text>
+              <Text style={styles.languageText}>Language: </Text>
+              <Text style={styles.languageText}>{language} </Text>
             </View>
             <View style={styles.outputContainer}>
-              <Text>Sentiment: </Text>
-              <Text>{sentiment} </Text>
+              <Text style={styles.languageText}>Sentiment: </Text>
+              <Text style={styles.languageText}>{sentiment} </Text>
             </View>
             <View style={styles.outputContainer}>
-              <Text >Entities: </Text>
-              <Text multiline={true}>{entities} </Text>
+              <Text style={styles.languageText} >Entities: </Text>
+              <Text style={styles.languageText} multiline={true}>{entities} </Text>
             </View>
           </View>
         </View>
@@ -121,6 +121,10 @@ const styles = StyleSheet.create({
   },
   imageStyle: {
     opacity: 0.4
+  },
+  languageText: {
+    fontSize: 15,
+    fontWeight: 'bold',
   },
   innerContainer: {
     padding: 15,

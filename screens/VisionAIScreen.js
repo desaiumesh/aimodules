@@ -113,6 +113,11 @@ const VisionAIScreen = () => {
 
         try {
 
+            if (base64Data == undefined) {
+                alert('Please select an image');
+                return;
+            }
+
             var base64 = Buffer.from(base64Data, 'base64');
             const resp = await ImageAnalysisVApi({ base64 });
 
@@ -248,8 +253,8 @@ const VisionAIScreen = () => {
                 </View>
 
                 <View style={styles.innerSliderContainer} >
-                    <Text>Object:</Text>
-                    <Text>{objectConfidence.toFixed(3)}</Text>
+                    <Text style={styles.imageText}>Object:</Text>
+                    <Text style={styles.imageText}>{objectConfidence.toFixed(3)}</Text>
                     <Slider
                         style={{ width: 200, height: 40 }}
                         step={0.1}
@@ -261,8 +266,8 @@ const VisionAIScreen = () => {
                 </View>
 
                 <View style={styles.innerSliderContainer} >
-                    <Text>Person:</Text>
-                    <Text>{personConfidence.toFixed(3)}</Text>
+                    <Text style={styles.imageText}>Person:</Text>
+                    <Text style={styles.imageText}>{personConfidence.toFixed(3)}</Text>
                     <Slider
                         style={{ width: 200, height: 40 }}
                         step={0.1}
@@ -274,9 +279,9 @@ const VisionAIScreen = () => {
                 </View>
 
                 <ScrollView>
-                    <Text style={styles.text}>{tags?.map(u => u).join(", ")}</Text>
+                    <Text style={styles.imageText}>{tags?.map(u => u).join(", ")}</Text>
                 </ScrollView>
-                <Checkbox.Item label="People only" status={checked ? 'checked' : 'unchecked'}
+                <Checkbox.Item  label="People only" status={checked ? 'checked' : 'unchecked'}
                     onPress={() => {
                         setChecked(!checked);
                     }}
@@ -303,6 +308,10 @@ const styles = StyleSheet.create({
     },
     imageStyle: {
         opacity: 0.3
+    },
+    imageText: {
+        fontSize: 15,
+        fontWeight: 'bold',
     },
     innerContainer: {
         alignItems: 'center',

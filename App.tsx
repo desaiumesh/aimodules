@@ -9,7 +9,6 @@ import DrawerContent from './components/DrawerContent';
 import HomeAIScreen from './screens/HomeAIScreen';
 import TextAIScreen from './screens/TextAIScreen';
 import SpeechAIScreen from './screens/SpeechAIScreen';
-import App_mic_input from './screens/App_mic_input';
 import { MD3DarkTheme, MD3LightTheme, PaperProvider, adaptNavigationTheme } from 'react-native-paper';
 import merge from 'deepmerge';
 import { useTheme } from 'react-native-paper';
@@ -17,6 +16,9 @@ import Header from './components/Header';
 import { StatusBar, View } from 'react-native';
 import { PreferencesContext } from './components/PreferencesContext';
 import VisionAIScreen from './screens/VisionAIScreen';
+import SettingsAIScreen from './screens/SettingsAIScreen';
+import ClassificationAIScreen from './screens/ClassificationAIScreen';
+import ClassificationAITrainingScreen from './screens/ClassificationAITrainingScreen';
 
 const darkColors = {
   "colors": {
@@ -156,14 +158,20 @@ function App(): JSX.Element {
           />
         </View>
         <Drawer.Navigator
-          screenOptions={{ header: (props) => <Header color={statusBarColor} {...props} /> }}
+          screenOptions={{ header: (props) => <Header color={statusBarColor} {...props} /> ,
+          drawerStyle: {
+            width: 175,
+            },
+         }}
           drawerContent={() => <DrawerContent />} >
 
           <Drawer.Screen name="Home" component={HomeAIScreen} />
           <Drawer.Screen name="Text" component={TextAIScreen} />
           <Drawer.Screen name="Speech" component={SpeechAIScreen} />
           <Drawer.Screen name="Vision" component={VisionAIScreen} />
-
+          <Drawer.Screen name="Train" component={ClassificationAITrainingScreen} />
+          <Drawer.Screen name="Classify" component={ClassificationAIScreen} />
+          <Drawer.Screen name="Settings" component={SettingsAIScreen} />
         </Drawer.Navigator>
       </NavigationContainer>
     </PaperProvider>

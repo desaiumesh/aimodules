@@ -12,7 +12,7 @@ import AiModel from './AiModel';
       <AiModel title ="Text" imgUrl={require('../assets/text.jpg')} screen="Text"></AiModel>
       <AiModel title ="Speech" imgUrl={require('../assets/speech.jpg')} screen="Speech"></AiModel>
       <AiModel title ="Vision" imgUrl={require('../assets/vision.jpg')} screen="Vision"></AiModel>
-      <AiModel title ="Language" imgUrl={require('../assets/language.jpg')} screen="Text"></AiModel>
+      <AiModel title ="Classify" imgUrl={require('../assets/language.jpg')} screen="Classify"></AiModel>
     </ScrollView>
   )
 }
