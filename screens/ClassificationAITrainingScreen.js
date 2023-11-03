@@ -6,6 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import { CustomVisionApi, CustomVisionCreateTagApi, CustomVisionGetIterationApi, CustomVisionGetIterationPerformanceApi, CustomVisionGetIterationsApi, CustomVisionGetTagsApi, CustomVisionPublishIterationApi, CustomVisionTagsApi, CustomVisionTestApi, CustomVisionTrainApi, CustomVisionUploadImagesApi } from '../api/CustomVisionApi';
 import { appStyles } from '../styles/appStyle';
+import Carousel from 'react-native-reanimated-carousel';
 
 const ClassificationAITrainingScreen = () => {
     const [base64Data, setBase64Data] = useState();
@@ -27,7 +28,7 @@ const ClassificationAITrainingScreen = () => {
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
 
-    
+
     const [visibleIteration, setVisibleIteration] = React.useState(false);
     const showIterationModal = () => setVisibleIteration(true);
     const hideIterationModal = () => setVisibleIteration(false);
@@ -304,17 +305,35 @@ const ClassificationAITrainingScreen = () => {
                     />
                     <IconButton icon="plus" mode="contained" onPress={showModal}>Add Tags</IconButton>
                 </View>
-                <Divider bold={true}/>
+                <Divider bold={true} />
                 <Text style={styles.textButllet}>2:  Train </Text>
                 <View style={styles.ImageContainer}>
-                    <Image source={{ uri: 'data:image/jpeg;base64,' + base64Data }} style={styles.cameraImage} />
+                    <Carousel
+                        loop
+                        width={300}
+                        height={150}
+                        autoPlay={false}
+                        data={Images}
+                        scrollAnimationDuration={1000}
+                        mode='parallax'
+                        renderItem={({ item }) => (
+                            <View
+                                style={{
+                                    flex: 1,
+                                    borderWidth: 1,
+                                    justifyContent: 'center',
+                                }} >
+                                <Image  resizeMode='contain' source={{ uri: 'data:image/jpeg;base64,' + item['base64'] }} width={300} height={180} />
+                            </View>
+                        )}
+                    />
                 </View>
                 <View style={styles.innerContainer}>
                     <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
                     <IconButton icon="upload" mode="contained" onPress={() => { uploadImage() }}>Upload Image</IconButton>
                     <IconButton icon="cog" mode="contained" onPress={() => { train() }}>Train</IconButton>
                 </View>
-                <Divider bold={true}/>
+                <Divider bold={true} />
                 <Text style={styles.textButllet}>3:  Iteration</Text>
                 <View style={styles.innerContainer}>
                     <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
@@ -342,16 +361,16 @@ const ClassificationAITrainingScreen = () => {
                         </View>
                     </Modal>
                 </Portal>
-                <Divider bold={true}/>
+                <Divider bold={true} />
                 <Text style={styles.textButllet}>4:  Publish</Text>
                 <View style={styles.innerTagContainer}>
                     <TextInput style={styles.inputPublishStyles} placeholder="Type publish name"
                         onChangeText={(text) => setPublishName(text)} ></TextInput>
-               </View>
-               <View style={styles.IconButton} >
-                  <IconButton  icon="web" mode="contained" onPress={() => { publish() }}>Publish</IconButton>
-               </View>
-               <Divider bold={true}/>
+                </View>
+                <View style={styles.IconButton} >
+                    <IconButton icon="web" mode="contained" onPress={() => { publish() }}>Publish</IconButton>
+                </View>
+                <Divider bold={true} />
             </View>
         </ImageBackground>
 
@@ -426,7 +445,7 @@ const styles = StyleSheet.create({
     inputPublishStyles: {
         fontSize: 15,
         fontWeight: 'bold',
-        width:230
+        width: 230
     },
     buttonConatiner: {
         flexDirection: 'row',
@@ -492,7 +511,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     divider: {
-        bold:'true'
+        bold: 'true'
     },
 });
 
