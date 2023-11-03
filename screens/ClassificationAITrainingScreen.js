@@ -1,6 +1,6 @@
 import { StyleSheet, View, ImageBackground, Image, PermissionsAndroid } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import { Text, IconButton, TextInput } from 'react-native-paper';
+import { Text, IconButton, TextInput, Divider, Modal, Portal, } from 'react-native-paper';
 import { SelectList } from 'react-native-dropdown-select-list'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
@@ -22,6 +22,15 @@ const ClassificationAITrainingScreen = () => {
     const [iterations, setIterations] = useState([]);
 
     const [iterationData, setIterationData] = useState([]);
+
+    const [visible, setVisible] = React.useState(false);
+    const showModal = () => setVisible(true);
+    const hideModal = () => setVisible(false);
+
+    
+    const [visibleIteration, setVisibleIteration] = React.useState(false);
+    const showIterationModal = () => setVisibleIteration(true);
+    const hideIterationModal = () => setVisibleIteration(false);
 
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -165,10 +174,11 @@ const ClassificationAITrainingScreen = () => {
 
         var iterationId = selectedIteration;
 
-        const resp = await CustomVisionGetIterationApi({iterationId});
+        const resp = await CustomVisionGetIterationApi({ iterationId });
 
         if (resp.status == 200) {
             setIterationData(resp.data);
+            showIterationModal();
         }
         else {
             alert('Error in getting iteration data');
@@ -263,41 +273,51 @@ const ClassificationAITrainingScreen = () => {
             style={styles.image}
             imageStyle={styles.imageStyle}
             resizeMode="cover">
-
+            <Text style={styles.textButllet}>1:  Tag </Text>
             <View style={styles.container}>
-                <View>
-                    <View style={styles.innerTagContainer}>
-                        <TextInput placeholder="Type tag name"
-                            onChangeText={(text) => setText(text)} ></TextInput>
-                        <IconButton icon="plus" mode="contained" onPress={() => { addTags() }}>Add Tags</IconButton>
-                    </View>
-                    <View style={styles.innerTagContainer}>
-                        <SelectList
-                            setSelected={setSelectedTag}
-                            data={tags}
-                            arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-                            searchicon={<Ionicons name="search" size={20} color={'white'} />}
-                            closeicon={<Ionicons name="close" size={20} color={'white'} />}
-                            search={true}
-                            placeholder="Select Image Tag"
-                            searchPlaceholder='Search Image Tag'
-                            boxStyles={styles.boxStyles}
-                            inputStyles={styles.inputStyles}
-                            dropdownStyles={styles.dropdownStyles}
-                        />
-                        <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupTags() }}>Add Tags</IconButton>
-
-                    </View>
-
+                <Portal>
+                    <Modal theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.6)' } }} visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modelContainerStyle}>
+                        <View>
+                            <View style={styles.innerTagContainer}>
+                                <Text style={styles.text}>Tag : </Text>
+                                <TextInput style={styles.textInput} placeholder="Type tag name"
+                                    onChangeText={(text) => setText(text)} ></TextInput>
+                                <IconButton icon="plus" mode="contained" onPress={() => { addTags() }}>Add Tags</IconButton>
+                            </View>
+                        </View>
+                    </Modal>
+                </Portal>
+                <View style={styles.innerContainer}>
+                    <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupTags() }}>Add Tags</IconButton>
+                    <SelectList
+                        setSelected={setSelectedTag}
+                        data={tags}
+                        arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
+                        searchicon={<Ionicons name="search" size={20} color={'white'} />}
+                        closeicon={<Ionicons name="close" size={20} color={'white'} />}
+                        search={true}
+                        placeholder="Select Image Tag"
+                        searchPlaceholder='Search Image Tag'
+                        boxStyles={styles.boxStyles}
+                        inputStyles={styles.inputStyles}
+                        dropdownStyles={styles.dropdownStyles}
+                    />
+                    <IconButton icon="plus" mode="contained" onPress={showModal}>Add Tags</IconButton>
+                </View>
+                <Divider bold={true}/>
+                <Text style={styles.textButllet}>2:  Train </Text>
+                <View style={styles.ImageContainer}>
+                    <Image source={{ uri: 'data:image/jpeg;base64,' + base64Data }} style={styles.cameraImage} />
                 </View>
                 <View style={styles.innerContainer}>
                     <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
                     <IconButton icon="upload" mode="contained" onPress={() => { uploadImage() }}>Upload Image</IconButton>
                     <IconButton icon="cog" mode="contained" onPress={() => { train() }}>Train</IconButton>
                 </View>
-                <Text>Latest Iteration :{iteration?.name}</Text>
-
+                <Divider bold={true}/>
+                <Text style={styles.textButllet}>3:  Iteration</Text>
                 <View style={styles.innerContainer}>
+                    <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
                     <SelectList
                         setSelected={setSelectedIteration}
                         data={iterations}
@@ -312,17 +332,26 @@ const ClassificationAITrainingScreen = () => {
                         dropdownStyles={styles.dropdownStyles}
 
                     />
-                    <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
+                    <IconButton icon="progress-check" mode="contained" onPress={() => { getIterationPerformance() }}>Train</IconButton>
                 </View>
-                <View style={styles.innerContainer}>
-                    <Text>Status :{iterationData.status}</Text>
-                    <IconButton icon="refresh" mode="contained" onPress={() => { getIterationPerformance() }}>Train</IconButton>
-                </View>
+
+                <Portal>
+                    <Modal theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.7)' } }} visible={visibleIteration} onDismiss={hideIterationModal} contentContainerStyle={styles.modelContainer1Style}>
+                        <View style={styles.innerContainer}>
+                            <Text>Iteration Status :{iterationData.status}</Text>
+                        </View>
+                    </Modal>
+                </Portal>
+                <Divider bold={true}/>
+                <Text style={styles.textButllet}>4:  Publish</Text>
                 <View style={styles.innerTagContainer}>
-                    <TextInput placeholder="Type publish name"
+                    <TextInput style={styles.inputPublishStyles} placeholder="Type publish name"
                         onChangeText={(text) => setPublishName(text)} ></TextInput>
-                    <IconButton icon="web" mode="contained" onPress={() => { publish() }}>Publish</IconButton>
-                </View>
+               </View>
+               <View style={styles.IconButton} >
+                  <IconButton  icon="web" mode="contained" onPress={() => { publish() }}>Publish</IconButton>
+               </View>
+               <Divider bold={true}/>
             </View>
         </ImageBackground>
 
@@ -331,9 +360,6 @@ const ClassificationAITrainingScreen = () => {
 
 const styles = StyleSheet.create({
     container: {
-        alignContent: 'center',
-        alignItems: 'center',
-        padding: 10,
         flex: 1,
     },
     innerContainer: {
@@ -342,12 +368,22 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 10,
         padding: 10,
-        marginBottom: 10,
         marginRight: 20,
         marginLeft: 20,
     },
+    textInput: {
+        flex: 1,
+        borderColor: 'gray',
+        borderWidth: 1
+    },
     innerTagContainer: {
         flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 10,
+    },
+    innerDropdownContainer: {
+        paddingTop: 10,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -355,6 +391,12 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: 'bold',
         padding: 10,
+    },
+    textButllet: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        paddingLeft: 10,
+        paddingTop: 10,
     },
     image: {
         flex: 1,
@@ -374,21 +416,17 @@ const styles = StyleSheet.create({
     },
     cameraImage: {
         width: 300,
-        height: 400,
+        height: 150,
     },
     inputStyles: {
         color: 'white',
         fontSize: 18,
         fontWeight: 'bold'
     },
-    dropdownStyles: {
-        opacity: 0.7,
-        borderRadius: 10,
-        margin: 10,
-        justifyContent: 'center',
-        alignItems: 'center',
+    inputPublishStyles: {
+        fontSize: 15,
         fontWeight: 'bold',
-        fontSize: 15
+        width:230
     },
     buttonConatiner: {
         flexDirection: 'row',
@@ -415,11 +453,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         fontWeight: 'bold',
         fontSize: 15,
-    },
-    inputStyles: {
-        color: 'white',
-        fontSize: 18,
-        fontWeight: 'bold'
+        width: 230,
     },
     dropdownStyles: {
         opacity: 0.7,
@@ -430,6 +464,35 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 15,
         backgroundColor: appStyles.whiteColor,
+
+    },
+    modelContainerStyle: {
+        backgroundColor: 'rgba(255, 255, 255, 0.6)',
+        padding: 20,
+        margin: 10,
+
+    },
+    modelContainer1Style: {
+        backgroundColor: 'rgba(255, 255, 255, 0.4)',
+        padding: 20,
+        margin: 10,
+
+    },
+    ImageContainer: {
+        marginRight: 20,
+        marginLeft: 20,
+        marginTop: 20,
+        borderColor: 'red',
+        borderWidth: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    IconButton: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    divider: {
+        bold:'true'
     },
 });
 
