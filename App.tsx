@@ -1,5 +1,6 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
+import { useState, useEffect } from 'react'
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import {
   NavigationContainer, DarkTheme as NavigationDarkTheme,
@@ -19,6 +20,7 @@ import VisionAIScreen from './screens/VisionAIScreen';
 import SettingsAIScreen from './screens/SettingsAIScreen';
 import ClassificationAIScreen from './screens/ClassificationAIScreen';
 import ClassificationAITrainingScreen from './screens/ClassificationAITrainingScreen';
+import SplashScreen from 'react-native-splash-screen';
 
 const darkColors = {
   "colors": {
@@ -143,9 +145,11 @@ function App(): JSX.Element {
     [toggleTheme, isThemeDark]
   );
 
+  useEffect(() => {
+    SplashScreen.hide();
+  }, []);
+  
   const Drawer = createDrawerNavigator();
-
- 
 
   return (
     <PreferencesContext.Provider value={preferences}>
