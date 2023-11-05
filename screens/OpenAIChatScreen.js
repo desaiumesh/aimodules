@@ -1,39 +1,46 @@
-import { StyleSheet, View, ImageBackground } from 'react-native'
-import React from 'react'
-import { Text, Button } from 'react-native-paper';
+import { StyleSheet, View, ImageBackground, KeyboardAvoidingView, Keyboard } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import { Text, Button, TextInput, IconButton, Avatar, Divider } from 'react-native-paper';
+import { ScrollView } from 'react-native-gesture-handler';
+
+const endpoint = "https://openaimodules102.openai.azure.com/";
+const key = "064e47e4ffce44678ac1fda5522f8f81";
 
 const OpenAIChatScreen = () => {
+    const [systemText, SetSystemText] = useState("You are an AI assistant that helps people find information.");
+    const [senderText, SetSenderText] = useState("");
+    const [messages, setMessages] = useState([]);
 
     const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 
+    const client = new OpenAIClient(endpoint,  new AzureKeyCredential(key));
 
-    const analyseText = async () => {
+    const clearChat = () => {
+        setMessages([]);
+    };
+
+    const sendMessage = async () => {
 
         try {
-            console.log("1");
 
-            const client = new OpenAIClient(
-                "https://openaimodules102.openai.azure.com/",
-                new AzureKeyCredential("064e47e4ffce44678ac1fda5522f8f81"));
+            Keyboard.dismiss();
 
-            console.log("2");
+            const index = messages?.findIndex(v => v.role === "system")
 
-            const messages = [
-                { role: "system", content: "You are an AI assistant that helps people find information." },
-                { role: "user", content: "How are you?" },
-                { role: "assistant", content: "As an AI, I don't have feelings in the same way that humans do, but I'm functioning properly and ready to assist you with any questions or information you need. How can I help you today?" },
-                { role: "user", content: "What is AI?" },
-                { role: "assistant", content: "AI stands for artificial intelligence. It refers to the ability of machines or computer programs to perform tasks that would normally require human intelligence. AI encompasses a wide range of technologies, including machine learning, natural language processing, expert systems, and robotics. These technologies allow machines to learn from experience, adapt to new inputs, and perform tasks that would normally require human intervention. AI is becoming increasingly important in a variety of industries, including healthcare, manufacturing, and finance, among others." },
-                { role: "user", content: "can you please elaborate?" },
-              ];
-            
-              const events = await client.getChatCompletions("TestChat", messages, { maxTokens: 128 });
+            if (index > -1) {
+                messages[index].content = systemText
+            } else {
+                messages.push({ role: "system", content: systemText })
+            }
 
-              console.log(events.choices);
+            messages.push({ role: "user", content: senderText });
 
-            console.log("3");
-            
+            const events = await client.getChatCompletions("TestChat", messages, { maxTokens: 300 });
 
+            messages.push({ role: "assistant", content: events?.choices[0].message?.content });
+
+            setMessages([...messages]);
+            SetSenderText("");
 
         } catch (error) {
             console.log(error);
@@ -46,8 +53,40 @@ const OpenAIChatScreen = () => {
             imageStyle={styles.imageStyle}
             resizeMode="cover">
             <View style={styles.container}>
-                <Text>OpenAIChatScreen</Text>
-                <Button icon="chat" mode="contained" onPress={() => { analyseText() }}>ANALYSE</Button>
+                <TextInput placeholder='You are an AI assistant that helps people find information.' style={styles.textInput} multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
+
+                <View style= {styles.chatcontainer}>
+                    <Text style={styles.text}>Chat session</Text>
+                    <IconButton icon="close" mode="contained" onPress={() => { clearChat() }}>Publish</IconButton>
+                </View>
+                <Divider/>
+                <KeyboardAvoidingView keyboardVerticalOffset={90} style={styles.container} >
+                    <ScrollView ref={ref => { this.scrollView = ref }}
+                        onContentSizeChange={() => this.scrollView.scrollToEnd({ animated: true })}>
+                        {
+                            messages?.map(({ role, content }) => {
+
+                                if (role === "assistant") {
+                                    return (<View style={styles.receiver}>
+                                        <Avatar.Icon size={30} icon="robot" />
+                                        <Text>{content}</Text>
+                                    </View>)
+                                }
+                                else if (role === "user") {
+                                    return (<View style={styles.sender}>
+                                        <Avatar.Icon size={30} icon="account" />
+                                        <Text>{content}</Text>
+                                    </View>)
+                                }
+                            })
+                        }
+
+                    </ScrollView>
+                    <View style={styles.footer}>
+                        <TextInput style={styles.bottomtextInput} value={senderText} onChangeText={(senderText) => SetSenderText(senderText)}></TextInput>
+                        <IconButton icon="send" mode="contained" disabled={senderText === ""} onPress={() => { sendMessage() }}>Publish</IconButton>
+                    </View>
+                </KeyboardAvoidingView>
             </View>
         </ImageBackground>
     )
@@ -57,14 +96,40 @@ const styles = StyleSheet.create({
     container: {
         alignContent: 'center',
         padding: 10,
-        flex: 1,
+        flex: 1
+    },
+    receiver: {
+        alignSelf: 'flex-start',
+        borderRadius: 20,
+        marginLeft: 15,
+        marginBottom: 20,
+        maxWidth: '80%',
+        position: 'relative',
+    },
+    sender: {
+        borderRadius: 20,
+        marginRight: 15,
+        marginBottom: 20,
+        maxWidth: '80%',
+        position: 'relative',
+        alignSelf: 'flex-end',
+        alignItems: 'flex-end',
+    },
+    chatcontainer:{
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    footer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%'
     },
     image: {
         flex: 1,
         justifyContent: 'center'
     },
     imageStyle: {
-        opacity: 0.4
+        opacity: 0.2
     },
     languageText: {
         fontSize: 15,
@@ -83,12 +148,10 @@ const styles = StyleSheet.create({
         padding: 10,
     },
     textInput: {
-        height: 250,
-        borderWidth: 2,
-        marginBottom: 20,
-        fontSize: 16,
-        padding: 10,
-        borderRadius: 10
+    },
+    bottomtextInput: {
+        bottom: 0,
+        flex: 1
     },
     outputContainer: {
         flexDirection: 'row',

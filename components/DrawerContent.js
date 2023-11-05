@@ -4,7 +4,7 @@ import { DrawerContentScrollView, DrawerItem } from '@react-navigation/drawer'
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { appStyles } from '../styles/appStyle';
-import { Drawer } from 'react-native-paper';
+import { Avatar, Drawer } from 'react-native-paper';
 
 import {
     SafeAreaProvider,
@@ -19,6 +19,9 @@ const DrawerContent = () => {
     return (
         <DrawerContentScrollView>
             <View>
+                <Drawer.Section style={{ paddingTop:10 }} >
+                    <Avatar.Image style={{ alignSelf: 'center' }} size={100} source={require('../assets/AI2.jpg')} />
+                </Drawer.Section>
                 <Drawer.Section>
                     <Drawer.Item label="Home" icon="home" onPress={() => { navigation.navigate('Home') }} />
                 </Drawer.Section>
@@ -34,9 +37,10 @@ const DrawerContent = () => {
                 </Drawer.Section>
 
                 <Drawer.Section >
-                    <Drawer.Item label="Settings" icon="cog" onPress={() => { navigation.navigate('Settings') }} />
+                    <Drawer.Item label="AI chat" icon="chat" onPress={() => { navigation.navigate('Chat') }} />
                 </Drawer.Section>
-                <Drawer.Item label="AI chat" icon="chat" onPress={() => { navigation.navigate('Chat') }} />
+                <Drawer.Item label="Settings" icon="cog" onPress={() => { navigation.navigate('Settings') }} />
+
             </View>
         </DrawerContentScrollView>
     )
