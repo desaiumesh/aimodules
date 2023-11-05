@@ -21,6 +21,7 @@ import SettingsAIScreen from './screens/SettingsAIScreen';
 import ClassificationAIScreen from './screens/ClassificationAIScreen';
 import ClassificationAITrainingScreen from './screens/ClassificationAITrainingScreen';
 import SplashScreen from 'react-native-splash-screen';
+import OpenAIChatScreen from './screens/OpenAIChatScreen';
 
 const darkColors = {
   "colors": {
@@ -176,6 +177,7 @@ function App(): JSX.Element {
           <Drawer.Screen name="Train" component={ClassificationAITrainingScreen} />
           <Drawer.Screen name="Classify" component={ClassificationAIScreen} />
           <Drawer.Screen name="Settings" component={SettingsAIScreen} />
+          <Drawer.Screen name="Chat" component={OpenAIChatScreen} />
         </Drawer.Navigator>
       </NavigationContainer>
     </PaperProvider>

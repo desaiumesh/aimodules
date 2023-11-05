@@ -36,6 +36,7 @@ const DrawerContent = () => {
                 <Drawer.Section >
                     <Drawer.Item label="Settings" icon="cog" onPress={() => { navigation.navigate('Settings') }} />
                 </Drawer.Section>
+                <Drawer.Item label="AI chat" icon="chat" onPress={() => { navigation.navigate('Chat') }} />
             </View>
         </DrawerContentScrollView>
     )
