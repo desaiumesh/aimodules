@@ -5,6 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { appStyles } from '../styles/appStyle';
 import { Avatar, Drawer } from 'react-native-paper';
+import { PreferencesContext } from '../components/PreferencesContext';
 
 import {
     SafeAreaProvider,
@@ -15,6 +16,12 @@ const DrawerContent = () => {
 
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
+
+    const { isLoggedOut } = React.useContext(PreferencesContext);
+
+    logout = () => {
+        isLoggedOut();
+    };
 
     return (
         <DrawerContentScrollView>
@@ -40,6 +47,8 @@ const DrawerContent = () => {
                     <Drawer.Item label="AI chat" icon="chat" onPress={() => { navigation.navigate('Chat') }} />
                 </Drawer.Section>
                 <Drawer.Item label="Settings" icon="cog" onPress={() => { navigation.navigate('Settings') }} />
+               
+                <Drawer.Item label="Log Out" icon="logout" onPress={() => { logout() }} />
 
             </View>
         </DrawerContentScrollView>

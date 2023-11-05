@@ -1,27 +1,17 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
 import { useState, useEffect } from 'react'
-import { createDrawerNavigator } from '@react-navigation/drawer';
 import {
   NavigationContainer, DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from '@react-navigation/native';
-import DrawerContent from './components/DrawerContent';
-import HomeAIScreen from './screens/HomeAIScreen';
-import TextAIScreen from './screens/TextAIScreen';
-import SpeechAIScreen from './screens/SpeechAIScreen';
 import { MD3DarkTheme, MD3LightTheme, PaperProvider, adaptNavigationTheme } from 'react-native-paper';
 import merge from 'deepmerge';
-import { useTheme } from 'react-native-paper';
-import Header from './components/Header';
 import { StatusBar, View } from 'react-native';
 import { PreferencesContext } from './components/PreferencesContext';
-import VisionAIScreen from './screens/VisionAIScreen';
-import SettingsAIScreen from './screens/SettingsAIScreen';
-import ClassificationAIScreen from './screens/ClassificationAIScreen';
-import ClassificationAITrainingScreen from './screens/ClassificationAITrainingScreen';
 import SplashScreen from 'react-native-splash-screen';
-import OpenAIChatScreen from './screens/OpenAIChatScreen';
+import LoginAIScreen from './screens/LoginAIScreen';
+import MainAIScreen from './screens/MainAIScreen';
 
 const darkColors = {
   "colors": {
@@ -130,59 +120,55 @@ function App(): JSX.Element {
 
   const [isThemeDark, setIsThemeDark] = React.useState(true);
 
+  const [isSignedIn, setIsSignedIn] = React.useState(false);
+
   let themeNv = isThemeDark ? CombinedNavigationDarkTheme : CombinedNavigationLightTheme;
   let themeProvider = isThemeDark ? darkPaperTheme : lightPaperTheme;
-  let statusBarColor = isThemeDark ? themeProvider.colors.onPrimary:themeProvider.colors.primary;
+  let statusBarColor = isThemeDark ? themeProvider.colors.onPrimary : themeProvider.colors.primary;
 
   const toggleTheme = React.useCallback(() => {
     return setIsThemeDark(!isThemeDark);
   }, [isThemeDark]);
 
+  const isLoggedIn = React.useCallback(() => {
+    return setIsSignedIn(true);
+  }, [isSignedIn]);
+
+  const isLoggedOut = React.useCallback(() => {
+    return setIsSignedIn(false);
+  }, [isSignedIn]);
+
   const preferences = React.useMemo(
     () => ({
       toggleTheme,
       isThemeDark,
+      isLoggedIn,
+      isLoggedOut,
+      isSignedIn
     }),
-    [toggleTheme, isThemeDark]
+    [toggleTheme, isThemeDark, isLoggedIn, isLoggedOut, isSignedIn]
+
   );
 
   useEffect(() => {
     SplashScreen.hide();
   }, []);
-  
-  const Drawer = createDrawerNavigator();
 
   return (
     <PreferencesContext.Provider value={preferences}>
       <PaperProvider theme={themeProvider}>
-      <NavigationContainer theme={themeNv}>
-        <View>
-          <StatusBar
-            backgroundColor={statusBarColor}
-            barStyle="light-content"
-          />
-        </View>
-        <Drawer.Navigator
-          screenOptions={{ header: (props) => <Header color={statusBarColor} {...props} /> ,
-          drawerStyle: {
-            width: 175,
-            },
-         }}
-          drawerContent={() => <DrawerContent />} >
+        <NavigationContainer theme={themeNv}>
+          <View>
+            <StatusBar
+              backgroundColor={statusBarColor}
+              barStyle="light-content"
+            />
+          </View>
+          {isSignedIn ? <MainAIScreen color={statusBarColor} /> : <LoginAIScreen color={statusBarColor} />}
 
-          <Drawer.Screen name="Home" component={HomeAIScreen} />
-          <Drawer.Screen name="Text" component={TextAIScreen} />
-          <Drawer.Screen name="Speech" component={SpeechAIScreen} />
-          <Drawer.Screen name="Vision" component={VisionAIScreen} />
-          <Drawer.Screen name="Train" component={ClassificationAITrainingScreen} />
-          <Drawer.Screen name="Classify" component={ClassificationAIScreen} />
-          <Drawer.Screen name="Settings" component={SettingsAIScreen} />
-          <Drawer.Screen name="Chat" component={OpenAIChatScreen} />
-        </Drawer.Navigator>
-      </NavigationContainer>
-    </PaperProvider>
+        </NavigationContainer>
+      </PaperProvider>
     </PreferencesContext.Provider>
-    
   );
 }
 
