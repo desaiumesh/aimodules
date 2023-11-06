@@ -4,8 +4,6 @@ import { PreferencesContext } from './PreferencesContext';
 
 const Header = ({ route, navigation, color }) => {
 
-    const { toggleTheme, isThemeDark } = React.useContext(PreferencesContext);
-
     const theme = useTheme();
     const openDrawer = () => {
         navigation.openDrawer();
@@ -31,11 +29,6 @@ const Header = ({ route, navigation, color }) => {
            
             <Appbar.Content color={theme.colors.light} title={route.name} />
 
-            <Switch
-                color={'red'}
-                value={isThemeDark}
-                onValueChange={toggleTheme}
-            />
         </Appbar.Header>
     );
 };

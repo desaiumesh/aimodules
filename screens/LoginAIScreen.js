@@ -5,18 +5,26 @@ import { useNavigation } from '@react-navigation/native';
 import SplashScreen from 'react-native-splash-screen';
 import { PreferencesContext } from '../components/PreferencesContext';
 import ReactNativeBiometrics, { BiometryTypes } from 'react-native-biometrics'
+import useAsyncStorage from '../storage/useAsyncStorage';
 
 
 const LoginAIScreen = ({ color }) => {
 
     const { isLoggedIn } = React.useContext(PreferencesContext);
     const biometrics = new ReactNativeBiometrics({ allowDeviceCredentials: true });
+    const [isBiometricsEnabled, setIsBiometricsEnabled] = useAsyncStorage('isBiometricsEnabled', true);
 
     useEffect(() => {
         SplashScreen.hide();
     }, []);
 
     const login = async () => {
+
+        if(!isBiometricsEnabled)
+        {
+            isLoggedIn();
+            return;
+        }
 
         const { success } = await biometrics.simplePrompt({
             promptMessage: 'Confirmation',

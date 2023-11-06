@@ -1,17 +1,18 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import {
   NavigationContainer, DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from '@react-navigation/native';
-import { MD3DarkTheme, MD3LightTheme, PaperProvider, adaptNavigationTheme } from 'react-native-paper';
+import { MD3DarkTheme, MD3LightTheme, PaperProvider } from 'react-native-paper';
 import merge from 'deepmerge';
 import { StatusBar, View } from 'react-native';
 import { PreferencesContext } from './components/PreferencesContext';
 import SplashScreen from 'react-native-splash-screen';
 import LoginAIScreen from './screens/LoginAIScreen';
 import MainAIScreen from './screens/MainAIScreen';
+import useAsyncStorage from './storage/useAsyncStorage';
 
 const darkColors = {
   "colors": {
@@ -118,8 +119,8 @@ const CombinedNavigationLightTheme = merge(lightPaperTheme, NavigationDefaultThe
 
 function App(): JSX.Element {
 
+  const [isDarkTheme, setIsDarkTheme] = useAsyncStorage('isDarkTheme', true);
   const [isThemeDark, setIsThemeDark] = React.useState(true);
-
   const [isSignedIn, setIsSignedIn] = React.useState(false);
 
   let themeNv = isThemeDark ? CombinedNavigationDarkTheme : CombinedNavigationLightTheme;
@@ -152,7 +153,10 @@ function App(): JSX.Element {
 
   useEffect(() => {
     SplashScreen.hide();
-  }, []);
+    var isDarkThemeData = isDarkTheme?.toString() === 'true' ? true : false;
+    setIsThemeDark(isDarkThemeData);
+
+  }, [isDarkTheme]);
 
   return (
     <PreferencesContext.Provider value={preferences}>

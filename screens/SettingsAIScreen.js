@@ -1,8 +1,25 @@
-import { StyleSheet, View, ImageBackground } from 'react-native'
-import React from 'react'
-import { Text } from 'react-native-paper';
+import { StyleSheet, View, ImageBackground, Switch } from 'react-native'
+import React from 'react';
+import useAsyncStorage from '../storage/useAsyncStorage';
+import { Text, TextInput, IconButton, Divider } from 'react-native-paper';
+import { PreferencesContext } from '../components/PreferencesContext';
 
 const SettingsAIScreen = () => {
+
+  const { toggleTheme, isThemeDark } = React.useContext(PreferencesContext);
+
+  const [isBiometricsEnabled, setIsBiometricsEnabled] = useAsyncStorage('isBiometricsEnabled', true);
+  const [isDarkTheme, setIsDarkTheme] = useAsyncStorage('isDarkTheme', true);
+
+  const toggleBiometrics = () => {
+    setIsBiometricsEnabled(!isBiometricsEnabled);
+  };
+
+  const toggleDarkTheme = () => {
+    setIsDarkTheme(!isDarkTheme);
+    toggleTheme();
+  };
+
   return (
 
     <ImageBackground source={require('../assets/AI2.jpg')}
@@ -10,7 +27,20 @@ const SettingsAIScreen = () => {
       imageStyle={styles.imageStyle}
       resizeMode="cover">
       <View style={styles.container}>
-        <Text>SettingsAIScreen</Text>
+        <View style={styles.innerContainer}>
+          <Text style={styles.biometricsText}>Biometrics </Text>
+          <Switch
+            value={isBiometricsEnabled}
+            onValueChange={toggleBiometrics} />
+        </View>
+        <Divider borderWidth={1}/>
+        <View style={styles.innerContainer}>
+          <Text style={styles.biometricsText}>Dark theme </Text>
+          <Switch
+            value={isDarkTheme}
+            onValueChange={toggleDarkTheme} />
+        </View>
+        <Divider borderWidth={1}/>
       </View>
     </ImageBackground>
 
@@ -24,12 +54,14 @@ const styles = StyleSheet.create({
   innerContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 10,
+    width: '100%',
     padding: 10,
-    marginBottom: 10,
-    marginRight: 20,
-    marginLeft: 20,
+  },
+  biometricsText: {
+    bottom: 0,
+    flex: 1,
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   text: {
     fontSize: 15,
@@ -41,7 +73,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   imageStyle: {
-    opacity: 0.5
+    opacity: 0.2
   },
   boxStyles: {
     borderRadius: 10,

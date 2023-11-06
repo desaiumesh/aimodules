@@ -1,4 +1,3 @@
-import { View, Text } from 'react-native'
 import React, { useEffect } from 'react'
 import DrawerContent from '../components/DrawerContent';
 import HomeAIScreen from './HomeAIScreen';
@@ -9,7 +8,6 @@ import SettingsAIScreen from './SettingsAIScreen';
 import ClassificationAIScreen from './ClassificationAIScreen';
 import ClassificationAITrainingScreen from './ClassificationAITrainingScreen';
 import OpenAIChatScreen from './OpenAIChatScreen';
-import { useTheme } from 'react-native-paper';
 import Header from '../components/Header';
 import SplashScreen from 'react-native-splash-screen';
 import { createDrawerNavigator } from '@react-navigation/drawer';

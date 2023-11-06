@@ -14,6 +14,7 @@ import AiModel from './AiModel';
       <AiModel title ="Vision" imgUrl={require('../assets/vision.jpg')} screen="Vision"></AiModel>
       <AiModel title ="Classify" imgUrl={require('../assets/language.jpg')} screen="Classify"></AiModel>
       <AiModel title ="Chat" imgUrl={require('../assets/AI2.jpg')} screen="Chat"></AiModel>
+      <AiModel title ="Image" imgUrl={require('../assets/AI1.jpg')} screen="Image"></AiModel>
     </ScrollView>
   )
 }
