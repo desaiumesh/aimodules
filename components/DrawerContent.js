@@ -26,9 +26,6 @@ const DrawerContent = () => {
     return (
         <DrawerContentScrollView>
             <View>
-                <Drawer.Section style={{ paddingTop:10 }} >
-                    <Avatar.Image style={{ alignSelf: 'center' }} size={100} source={require('../assets/AI2.jpg')} />
-                </Drawer.Section>
                 <Drawer.Section>
                     <Drawer.Item label="Home" icon="home" onPress={() => { navigation.navigate('Home') }} />
                 </Drawer.Section>
@@ -43,11 +40,12 @@ const DrawerContent = () => {
                     <Drawer.Item label="Test" icon="image-area" onPress={() => { navigation.navigate('Classify') }} />
                 </Drawer.Section>
 
-                <Drawer.Section >
+                <Drawer.Section title='Open AI' >
                     <Drawer.Item label="AI chat" icon="chat" onPress={() => { navigation.navigate('Chat') }} />
+                    <Drawer.Item label="Image" icon="image" onPress={() => { navigation.navigate('Image') }} />
                 </Drawer.Section>
                 <Drawer.Item label="Settings" icon="cog" onPress={() => { navigation.navigate('Settings') }} />
-               
+
                 <Drawer.Item label="Log Out" icon="logout" onPress={() => { logout() }} />
 
             </View>

@@ -40,7 +40,9 @@ const styles = StyleSheet.create({
     container: {
         alignContent: 'center',
         padding: 10,
-        flex: 1
+        flex: 1,
+        borderColor: 'red',
+        borderWidth: 0.2,
     },
     receiver: {
         alignSelf: 'flex-start',

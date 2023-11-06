@@ -13,6 +13,7 @@ import { useTheme } from 'react-native-paper';
 import Header from '../components/Header';
 import SplashScreen from 'react-native-splash-screen';
 import { createDrawerNavigator } from '@react-navigation/drawer';
+import OpenAIDallEScreen from './OpenAIDallEScreen';
 
 const MainAIScreen = ({color}) => {
 
@@ -39,6 +40,7 @@ const MainAIScreen = ({color}) => {
             <Drawer.Screen name="Classify" component={ClassificationAIScreen} />
             <Drawer.Screen name="Settings" component={SettingsAIScreen} />
             <Drawer.Screen name="Chat" component={OpenAIChatScreen} />
+            <Drawer.Screen name="Image" component={OpenAIDallEScreen} />
         </Drawer.Navigator>
     )
 }
