@@ -2,6 +2,7 @@ import { StyleSheet, View, ImageBackground, KeyboardAvoidingView, Keyboard } fro
 import React, { useEffect, useState } from 'react'
 import { Text, Button, TextInput, IconButton, Avatar, Divider } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
+import AIChat from '../components/AIChat';
 
 const endpoint = "https://openaimodules102.openai.azure.com/";
 const key = "064e47e4ffce44678ac1fda5522f8f81";
@@ -53,40 +54,15 @@ const OpenAIChatScreen = () => {
             imageStyle={styles.imageStyle}
             resizeMode="cover">
             <View style={styles.container}>
-                <TextInput placeholder='You are an AI assistant that helps people find information.' style={styles.textInput} multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
+                <TextInput placeholder='You are an AI assistant that helps people find information.' style={styles.textInput}
+                 multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
 
                 <View style= {styles.chatcontainer}>
                     <Text style={styles.text}>Chat session</Text>
                     <IconButton icon="close" mode="contained" onPress={() => { clearChat() }}>Publish</IconButton>
                 </View>
                 <Divider/>
-                <KeyboardAvoidingView keyboardVerticalOffset={90} style={styles.container} >
-                    <ScrollView ref={ref => { this.scrollView = ref }}
-                        onContentSizeChange={() => this.scrollView.scrollToEnd({ animated: true })}>
-                        {
-                            messages?.map(({ role, content }) => {
-
-                                if (role === "assistant") {
-                                    return (<View style={styles.receiver}>
-                                        <Avatar.Icon size={30} icon="robot" />
-                                        <Text>{content}</Text>
-                                    </View>)
-                                }
-                                else if (role === "user") {
-                                    return (<View style={styles.sender}>
-                                        <Avatar.Icon size={30} icon="account" />
-                                        <Text>{content}</Text>
-                                    </View>)
-                                }
-                            })
-                        }
-
-                    </ScrollView>
-                    <View style={styles.footer}>
-                        <TextInput style={styles.bottomtextInput} value={senderText} onChangeText={(senderText) => SetSenderText(senderText)}></TextInput>
-                        <IconButton icon="send" mode="contained" disabled={senderText === ""} onPress={() => { sendMessage() }}>Publish</IconButton>
-                    </View>
-                </KeyboardAvoidingView>
+                <AIChat messages={messages} senderText={senderText} SetSenderText={SetSenderText}  onPress={() => { sendMessage() }} />
             </View>
         </ImageBackground>
     )
