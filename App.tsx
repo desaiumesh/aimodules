@@ -1,8 +1,7 @@
 import 'react-native-gesture-handler';
 import * as React from 'react';
 import { useEffect } from 'react'
-import {
-  NavigationContainer, DarkTheme as NavigationDarkTheme,
+import { NavigationContainer, DarkTheme as NavigationDarkTheme,
   DefaultTheme as NavigationDefaultTheme,
 } from '@react-navigation/native';
 import { MD3DarkTheme, MD3LightTheme, PaperProvider } from 'react-native-paper';
@@ -165,8 +164,7 @@ function App(): JSX.Element {
           <View>
             <StatusBar
               backgroundColor={statusBarColor}
-              barStyle="light-content"
-            />
+              barStyle="light-content"  />
           </View>
           {isSignedIn ? <MainAIScreen color={statusBarColor} /> : <LoginAIScreen color={statusBarColor} />}
 

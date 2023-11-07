@@ -1,80 +1,96 @@
+import { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import axios from 'axios'
+import { useEffect } from 'react';
 
-const RESOURCE_KEY="8b2ccf3a18f44b1182d976b6329d68ad";
-const RESOURCE_REGION="australiaeast";
+const TextAnalysisApi = ({RESOURCE_KEY, RESOURCE_REGION}) => {
 
-const baseUrl = `https://${RESOURCE_REGION}.api.cognitive.microsoft.com`;
+  const baseUrl = `https://${RESOURCE_REGION}.api.cognitive.microsoft.com`;
 
-const TextAnalysisLanguageApi = ({text}) => {
-  
+  const TextAnalysisLanguageApi = async ({ text }) => {
+
+    console.log(RESOURCE_KEY);
+
     const configurationObject = {
-        method: 'post',
-        headers: {
-            'Content-Type': 'application/json',
-            'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
-        },
-        data: `{
-            "documents": [
-              {
-                "id": "1",
-                "text": "${text}"
-              }
-            ]
-          }`,
-        url: `${baseUrl}/text/analytics/v3.0/languages/`,
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
+      },
+      data: `{
+          "documents": [
+            {
+              "id": "1",
+              "text": "${text}"
+            }
+          ]
+        }`,
+      url: `${baseUrl}/text/analytics/v3.0/languages/`,
     };
 
-    return axios(configurationObject)
-    .then(res => res) 
-    .catch(error => error) 
-}
+    try {
+      const res = await axios(configurationObject);
+      return res;
+    } catch (error) {
+      return error;
+    }
+  }
 
-const TextAnalysisSentimentApi = ({text}) => {
-    
-  const configurationObject = {
+  const TextAnalysisSentimentApi = async ({ text }) => {
+
+    const configurationObject = {
       method: 'post',
       headers: {
-          'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
       },
       data: `{
-          "documents": [
-            {
-              "id": "1",
-              "text": "${text}"
-            }
-          ]
-        }`,
+        "documents": [
+          {
+            "id": "1",
+            "text": "${text}"
+          }
+        ]
+      }`,
       url: `${baseUrl}/text/analytics/v3.0/sentiment/`,
-  };
+    };
 
-  return axios(configurationObject)
-  .then(res => res) 
-  .catch(error => error) 
-}
+    try {
+      const res = await axios(configurationObject);
+      return res;
+    } catch (error) {
+      return error;
+    }
+  }
 
-const TextAnalysisEntitiesApi = ({text}) => {
-    
-  const configurationObject = {
+  const TextAnalysisEntitiesApi = async ({ text }) => {
+
+    const configurationObject = {
       method: 'post',
       headers: {
-          'Content-Type': 'application/json',
-          'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
+        'Content-Type': 'application/json',
+        'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
       },
       data: `{
-          "documents": [
-            {
-              "id": "1",
-              "text": "${text}"
-            }
-          ]
-        }`,
+        "documents": [
+          {
+            "id": "1",
+            "text": "${text}"
+          }
+        ]
+      }`,
       url: `${baseUrl}/text/analytics/v3.0/entities/recognition/general/`,
-  };
+    };
 
-  return axios(configurationObject)
-  .then(res => res) 
-  .catch(error => error) 
-}
+    try {
+      const res = await axios(configurationObject);
+      return res;
+    } catch (error) {
+      return error;
+    }
+  }
 
-export {TextAnalysisLanguageApi, TextAnalysisSentimentApi, TextAnalysisEntitiesApi};
+  return [TextAnalysisLanguageApi, TextAnalysisSentimentApi, TextAnalysisEntitiesApi];
+
+};
+
+export default TextAnalysisApi;

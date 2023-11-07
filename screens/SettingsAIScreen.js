@@ -1,8 +1,9 @@
-import { StyleSheet, View, ImageBackground, Switch } from 'react-native'
-import React from 'react';
+import { StyleSheet, View, ImageBackground, Switch, ScrollView } from 'react-native'
+import React, { useEffect, useState } from 'react';
 import useAsyncStorage from '../storage/useAsyncStorage';
-import { Text, TextInput, IconButton, Divider } from 'react-native-paper';
+import { Text, TextInput, IconButton, Divider, Button } from 'react-native-paper';
 import { PreferencesContext } from '../components/PreferencesContext';
+import AIResource from '../components/AIResource';
 
 const SettingsAIScreen = () => {
 
@@ -10,6 +11,11 @@ const SettingsAIScreen = () => {
 
   const [isBiometricsEnabled, setIsBiometricsEnabled] = useAsyncStorage('isBiometricsEnabled', true);
   const [isDarkTheme, setIsDarkTheme] = useAsyncStorage('isDarkTheme', true);
+
+  const [textResource, SetTextResource] = useAsyncStorage("textResource", null);
+
+  const [textKey, SetTextKey] = useState();
+  const [textRegion, SetTextRegion] = useState();
 
   const toggleBiometrics = () => {
     setIsBiometricsEnabled(!isBiometricsEnabled);
@@ -19,6 +25,16 @@ const SettingsAIScreen = () => {
     setIsDarkTheme(!isDarkTheme);
     toggleTheme();
   };
+
+  const saveTextResource = () => {
+    SetTextResource({ key: textKey, region: textRegion })
+  };
+
+  useEffect(() => {
+    SetTextKey(textResource?.key);
+    SetTextRegion(textResource?.region);
+
+  }, [isBiometricsEnabled, isDarkTheme, textResource]);
 
   return (
 
@@ -33,14 +49,23 @@ const SettingsAIScreen = () => {
             value={isBiometricsEnabled}
             onValueChange={toggleBiometrics} />
         </View>
-        <Divider borderWidth={1}/>
+        <Divider style={styles.divider} />
         <View style={styles.innerContainer}>
-          <Text style={styles.biometricsText}>Dark theme </Text>
+          <Text style={styles.biometricsText}>Dark Theme</Text>
           <Switch
             value={isDarkTheme}
             onValueChange={toggleDarkTheme} />
         </View>
-        <Divider borderWidth={1}/>
+        <Divider style={styles.divider} />
+        <ScrollView>
+          <AIResource resourceText='Text Resource' onPress={() => { saveTextResource() }}
+            firstInputPlaceholder='Key' firstInput={textKey} firstInputChanged={(textKeyValue) => { SetTextKey(textKeyValue); }}
+            secondInputPlaceholder='Region' secondInput={textRegion}
+            secondInputChanged={(textRegionValue) => { SetTextRegion(textRegionValue); }}>
+          </AIResource>
+
+          <Divider style={styles.divider} />
+        </ScrollView>
       </View>
     </ImageBackground>
 
@@ -50,6 +75,9 @@ const SettingsAIScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  divider: {
+    borderWidth: 1,
   },
   innerContainer: {
     flexDirection: 'row',
@@ -68,6 +96,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     padding: 10,
   },
+  resourcetext: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    padding: 10,
+    flex: 1,
+  },
   image: {
     flex: 1,
     justifyContent: 'center'
@@ -84,10 +118,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 15,
   },
+  keyInputStyles: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+    flex: 1,
+    marginRight: 10,
+    marginLeft: 10,
+    marginBottom: 5,
+  },
   inputStyles: {
     color: 'white',
     fontSize: 18,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
+    flex: 1,
+
   },
   dropdownStyles: {
     opacity: 0.7,

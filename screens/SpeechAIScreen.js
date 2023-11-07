@@ -21,7 +21,7 @@ import Video from 'react-native-video';
 import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from "@react-navigation/native";
 
-const RESOURCE_KEY = "8b2ccf3a18f44b1182d976b6329d68ad";
+const RESOURCE_KEY = "06495201accc4dfcaf847bb1f71252aa";
 const RESOURCE_REGION = "australiaeast";
 
 const SpeechAIScreen = () => {

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const RESOURCE_KEY="8b2ccf3a18f44b1182d976b6329d68ad";
+const RESOURCE_KEY="5e4cd7027f1d46a69fb9d21492b0d1bd";
 const RESOURCE_REGION="australiaeast";
 
 const baseUrl = `https://${RESOURCE_REGION}.api.cognitive.microsoft.com`;

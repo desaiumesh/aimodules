@@ -3,11 +3,14 @@ import React, { useEffect, useState } from 'react'
 import { appStyles } from '../styles/appStyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ImageBackground } from 'react-native';
-import { TextAnalysisEntitiesApi, TextAnalysisLanguageApi, TextAnalysisSentimentApi } from '../api/TextAnalysisApi';
 import Loading from '../components/Loading';
-import { Text , TextInput, Button} from 'react-native-paper';
+import { Text, TextInput, Button } from 'react-native-paper';
+import TextAnalysisApi from '../api/TextAnalysisApi';
+import useAsyncStorage from '../storage/useAsyncStorage';
 
 const TextAIScreen = () => {
+
+  const [textResource, SetTextResource] = useAsyncStorage("textResource", null);
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("");
   const [sentiment, setSentiment] = useState("");
@@ -15,13 +18,18 @@ const TextAIScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const analyseText = () => {
-
+    
     if (text == "") {
       alert("Please enter a Text");
       return;
     }
 
     Keyboard.dismiss();
+
+    const RESOURCE_KEY = textResource?.key;
+    const RESOURCE_REGION = textResource?.region;
+
+    const [TextAnalysisLanguageApi, TextAnalysisSentimentApi, TextAnalysisEntitiesApi] = TextAnalysisApi({ RESOURCE_KEY, RESOURCE_REGION })
 
     try {
 
@@ -73,7 +81,7 @@ const TextAIScreen = () => {
 
   if (isLoading) {
     return (
-     <Loading></Loading>
+      <Loading></Loading>
     );
   }
   else {
