@@ -8,7 +8,6 @@ const AIResource = ({resourceText, firstInput, firstInputPlaceholder, firstInput
         <View>
             <View style={styles.innerContainer}>
                 <Text style={styles.resourcetext}>{resourceText}</Text>
-                <IconButton icon="content-save" mode="contained" onPress={onPress}></IconButton>
             </View>
             <TextInput style={styles.keyInputStyles}  value={firstInput} onChangeText={firstInputChanged} placeholder={firstInputPlaceholder} />
             <TextInput style={styles.keyInputStyles}  value={secondInput} onChangeText={secondInputChanged} placeholder={secondInputPlaceholder} />

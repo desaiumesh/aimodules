@@ -1,12 +1,12 @@
 import axios from 'axios'
 
-const baseTrainingUrl = `https://customaiimage.cognitiveservices.azure.com`;
-const TRAININGKEY = "263c89ff01984f109a6f9b8b040e1a20";
 const PROJECTID = "ba91a0bb-1f42-4777-8ce3-897692e71d5f";
 
-const basePredictionUrl = `https://customaiimage-prediction.cognitiveservices.azure.com`;
-const PREDICTIONKEY = "fb92bb0d21b74cdfbeb9076b6b9d4b1c";
+const TRAININGKEY = "263c89ff01984f109a6f9b8b040e1a20";
+const baseTrainingUrl = `https://customaiimage.cognitiveservices.azure.com`;
 
+const PREDICTIONKEY = "fb92bb0d21b74cdfbeb9076b6b9d4b1c";
+const basePredictionUrl = `https://customaiimage-prediction.cognitiveservices.azure.com`;
 const PUBLICATIONPREDICTIONKEY =`/subscriptions/bccebad9-cd2c-4d0b-83e5-0f0d6747cecc/resourceGroups/AI-102-ResourceGroup/providers/Microsoft.CognitiveServices/accounts/CustomAIImage-Prediction`
 
 const CustomVisionGetTagsApi = async () => {
