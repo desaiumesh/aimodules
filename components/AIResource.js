@@ -28,7 +28,6 @@ const styles = StyleSheet.create({
     resourcetext: {
         fontSize: 15,
         fontWeight: 'bold',
-        padding: 10,
         flex: 1,
     },
     keyInputStyles: {

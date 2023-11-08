@@ -1,6 +1,6 @@
-import { StyleSheet, View, ImageBackground, Image, PermissionsAndroid } from 'react-native'
+import { StyleSheet, View, ImageBackground, Image, PermissionsAndroid, ScrollView } from 'react-native'
 import React, { useState, useEffect } from 'react'
-import { Text, IconButton, TextInput, Divider, Modal, Portal, } from 'react-native-paper';
+import { Text, IconButton, TextInput, Divider, Modal, Portal, List } from 'react-native-paper';
 import { SelectList } from 'react-native-dropdown-select-list'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
@@ -290,106 +290,107 @@ const ClassificationAITrainingScreen = () => {
             style={styles.image}
             imageStyle={styles.imageStyle}
             resizeMode="cover">
-            <Text style={styles.textButllet}>1:  Tag </Text>
-            <View style={styles.container}>
-                <Portal>
-                    <Modal theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.6)' } }} visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modelContainerStyle}>
-                        <View>
-                            <View style={styles.innerTagContainer}>
-                                <Text style={styles.text}>Tag : </Text>
-                                <TextInput style={styles.textInput} placeholder="Type tag name"
-                                    onChangeText={(text) => setText(text)} ></TextInput>
-                                <IconButton icon="plus" mode="contained" onPress={() => { addTags() }}>Add Tags</IconButton>
+           <ScrollView>
+           <List.Accordion title="1: Tag">
+                    <Portal>
+                        <Modal theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.6)' } }} visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modelContainerStyle}>
+                            <View>
+                                <View style={styles.innerTagContainer}>
+                                    <Text style={styles.text}>Tag : </Text>
+                                    <TextInput style={styles.textInput} placeholder="Type tag name"
+                                        onChangeText={(text) => setText(text)} ></TextInput>
+                                    <IconButton icon="plus" mode="contained" onPress={() => { addTags() }}>Add Tags</IconButton>
+                                </View>
                             </View>
-                        </View>
-                    </Modal>
-                </Portal>
-                <View style={styles.innerContainer}>
-                    <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupTags() }}>Add Tags</IconButton>
-                    <SelectList
-                        setSelected={setSelectedTag}
-                        data={tags}
-                        arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-                        searchicon={<Ionicons name="search" size={20} color={'white'} />}
-                        closeicon={<Ionicons name="close" size={20} color={'white'} />}
-                        search={true}
-                        placeholder="Select Image Tag"
-                        searchPlaceholder='Search Image Tag'
-                        boxStyles={styles.boxStyles}
-                        inputStyles={styles.inputStyles}
-                        dropdownStyles={styles.dropdownStyles}
-                    />
-                    <IconButton icon="plus" mode="contained" onPress={showModal}>Add Tags</IconButton>
-                </View>
-                <Divider bold={true} />
-                <Text style={styles.textButllet}>2:  Train </Text>
-                <View style={styles.ImageContainer}>
-                    <Carousel
-                        loop
-                        width={300}
-                        height={150}
-                        autoPlay={false}
-                        data={Images}
-                        scrollAnimationDuration={1000}
-                        mode='parallax'
-                        renderItem={({ item }) => (
-                            <View
-                                style={{
-                                    flex: 1,
-                                    borderWidth: 1,
-                                    justifyContent: 'center',
-                                }} >
-                                <Image resizeMode='contain' source={{ uri: 'data:image/jpeg;base64,' + item['base64'] }} width={300} height={180} />
+                        </Modal>
+                    </Portal>
+                    <View style={styles.innerContainer}>
+                        <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupTags() }}>Add Tags</IconButton>
+                        <SelectList
+                            setSelected={setSelectedTag}
+                            data={tags}
+                            arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
+                            searchicon={<Ionicons name="search" size={20} color={'white'} />}
+                            closeicon={<Ionicons name="close" size={20} color={'white'} />}
+                            search={true}
+                            placeholder="Select Image Tag"
+                            searchPlaceholder='Search Image Tag'
+                            boxStyles={styles.boxStyles}
+                            inputStyles={styles.inputStyles}
+                            dropdownStyles={styles.dropdownStyles}
+                        />
+                        <IconButton icon="plus" mode="contained" onPress={showModal}>Add Tags</IconButton>
+                    </View>
+                </List.Accordion>
+
+                <List.Accordion title="2: Train">
+                    <View style={styles.ImageContainer}>
+                        <Carousel
+                            loop
+                            width={300}
+                            height={150}
+                            autoPlay={false}
+                            data={Images}
+                            scrollAnimationDuration={1000}
+                            mode='parallax'
+                            renderItem={({ item }) => (
+                                <View
+                                    style={{
+                                        flex: 1,
+                                        borderWidth: 1,
+                                        justifyContent: 'center',
+                                    }} >
+                                    <Image resizeMode='contain' source={{ uri: 'data:image/jpeg;base64,' + item['base64'] }} width={300} height={180} />
+                                </View>
+                            )}
+                        />
+                    </View>
+                    <View style={styles.innerContainer}>
+                        <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
+                        <IconButton icon="upload" mode="contained" onPress={() => { uploadImage() }}>Upload Image</IconButton>
+                        <IconButton icon="cog" mode="contained" onPress={() => { train() }}>Train</IconButton>
+                    </View>
+                </List.Accordion>
+
+                <List.Accordion title="3: Iteration">
+                    <View style={styles.innerContainer}>
+                        <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
+                        <SelectList
+                            setSelected={setSelectedIteration}
+                            data={iterations}
+                            arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
+                            searchicon={<Ionicons name="search" size={20} color={'white'} />}
+                            closeicon={<Ionicons name="close" size={20} color={'white'} />}
+                            search={true}
+                            placeholder="Select Iteration"
+                            searchPlaceholder='Search Iteration'
+                            boxStyles={styles.boxStyles}
+                            inputStyles={styles.inputStyles}
+                            dropdownStyles={styles.dropdownStyles}
+
+                        />
+                        <IconButton icon="progress-check" mode="contained" onPress={() => { getIterationPerformance() }}>Train</IconButton>
+                    </View>
+                    <Portal>
+                        <Modal theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.7)' } }} visible={visibleIteration} onDismiss={hideIterationModal} contentContainerStyle={styles.modelContainer1Style}>
+                            <View style={styles.innerContainer}>
+                                <Text>Iteration Status :{iterationData.status}</Text>
                             </View>
-                        )}
-                    />
-                </View>
-                <View style={styles.innerContainer}>
-                    <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
-                    <IconButton icon="upload" mode="contained" onPress={() => { uploadImage() }}>Upload Image</IconButton>
-                    <IconButton icon="cog" mode="contained" onPress={() => { train() }}>Train</IconButton>
-                </View>
-                <Divider bold={true} />
-                <Text style={styles.textButllet}>3:  Iteration</Text>
-                <View style={styles.innerContainer}>
-                    <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
-                    <SelectList
-                        setSelected={setSelectedIteration}
-                        data={iterations}
-                        arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-                        searchicon={<Ionicons name="search" size={20} color={'white'} />}
-                        closeicon={<Ionicons name="close" size={20} color={'white'} />}
-                        search={true}
-                        placeholder="Select Iteration"
-                        searchPlaceholder='Search Iteration'
-                        boxStyles={styles.boxStyles}
-                        inputStyles={styles.inputStyles}
-                        dropdownStyles={styles.dropdownStyles}
+                        </Modal>
+                    </Portal>
+                </List.Accordion>
 
-                    />
-                    <IconButton icon="progress-check" mode="contained" onPress={() => { getIterationPerformance() }}>Train</IconButton>
-                </View>
-
-                <Portal>
-                    <Modal theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.7)' } }} visible={visibleIteration} onDismiss={hideIterationModal} contentContainerStyle={styles.modelContainer1Style}>
-                        <View style={styles.innerContainer}>
-                            <Text>Iteration Status :{iterationData.status}</Text>
-                        </View>
-                    </Modal>
-                </Portal>
-                <Divider bold={true} />
-                <Text style={styles.textButllet}>4:  Publish</Text>
-                <View style={styles.innerTagContainer}>
-                    <TextInput style={styles.inputPublishStyles} placeholder="Type publish name"
-                        onChangeText={(text) => setPublishName(text)} ></TextInput>
-                </View>
-                <View style={styles.IconButton} >
-                    <IconButton icon="web" mode="contained" onPress={() => { publish() }}>Publish</IconButton>
-                </View>
-                <Divider bold={true} />
-            </View>
+                <List.Accordion title="4: Publish">
+                    <View style={styles.innerTagContainer}>
+                        <TextInput style={styles.inputPublishStyles} placeholder="Type publish name"
+                            onChangeText={(text) => setPublishName(text)} ></TextInput>
+                    </View>
+                    <View style={styles.IconButton} >
+                        <IconButton icon="web" mode="contained" onPress={() => { publish() }}>Publish</IconButton>
+                    </View>
+                </List.Accordion>
+           </ScrollView>
         </ImageBackground>
-
     )
 }
 
@@ -434,8 +435,7 @@ const styles = StyleSheet.create({
         paddingTop: 10,
     },
     image: {
-        flex: 1,
-        justifyContent: 'center'
+        flex: 1
     },
     imageStyle: {
         opacity: 0.5
