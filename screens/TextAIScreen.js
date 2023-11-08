@@ -10,7 +10,7 @@ import useAsyncStorage from '../storage/useAsyncStorage';
 
 const TextAIScreen = () => {
 
-  const [textResource, SetTextResource] = useAsyncStorage("textResource", null);
+  const [textResource] = useAsyncStorage("textResource", null);
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("");
   const [sentiment, setSentiment] = useState("");

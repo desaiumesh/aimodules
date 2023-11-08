@@ -4,12 +4,22 @@ import { Text, IconButton, TextInput, Divider, Modal, Portal, } from 'react-nati
 import { SelectList } from 'react-native-dropdown-select-list'
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
-import { CustomVisionApi, CustomVisionCreateTagApi, CustomVisionGetIterationApi, CustomVisionGetIterationPerformanceApi, CustomVisionGetIterationsApi, CustomVisionGetTagsApi, CustomVisionPublishIterationApi, CustomVisionTagsApi, CustomVisionTestApi, CustomVisionTrainApi, CustomVisionUploadImagesApi } from '../api/CustomVisionApi';
+import CustomVisionApi from '../api/CustomVisionApi';
 import { appStyles } from '../styles/appStyle';
 import Carousel from 'react-native-reanimated-carousel';
+import useAsyncStorage from '../storage/useAsyncStorage';
 
 const ClassificationAITrainingScreen = () => {
-    const [base64Data, setBase64Data] = useState();
+
+    const [customVisionResource] = useAsyncStorage("customVisionResource", null);
+    const projectId = customVisionResource?.projectId;
+    const trainingKey = customVisionResource?.trainingKey;
+    const trainingUrl = customVisionResource?.trainingUrl;
+
+    const predictionKey = customVisionResource?.predictionKey;
+    const predictionUrl = customVisionResource?.predictionUrl;
+    const publicationPredictionKey = customVisionResource?.publicationPredictionKey;
+
     const [text, setText] = useState();
 
     const [selectedTag, setSelectedTag] = useState();
@@ -28,10 +38,17 @@ const ClassificationAITrainingScreen = () => {
     const showModal = () => setVisible(true);
     const hideModal = () => setVisible(false);
 
-
     const [visibleIteration, setVisibleIteration] = React.useState(false);
     const showIterationModal = () => setVisibleIteration(true);
     const hideIterationModal = () => setVisibleIteration(false);
+
+    const [CustomVisionGetTagsApi, CustomVisionGetIterationsApi, CustomVisionGetIterationApi,
+        CustomVisionCreateTagApi, CustomVisionUploadImagesApi, CustomVisionTrainApi,
+        CustomVisionPublishIterationApi] =
+        CustomVisionApi({
+            projectId, trainingKey, trainingUrl,
+            predictionKey, predictionUrl, publicationPredictionKey
+        });
 
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -232,8 +249,8 @@ const ClassificationAITrainingScreen = () => {
         finally {
 
         }
-
     };
+
 
     const publish = async () => {
 
@@ -266,7 +283,6 @@ const ClassificationAITrainingScreen = () => {
         finally {
 
         }
-
     };
 
     return (
@@ -323,7 +339,7 @@ const ClassificationAITrainingScreen = () => {
                                     borderWidth: 1,
                                     justifyContent: 'center',
                                 }} >
-                                <Image  resizeMode='contain' source={{ uri: 'data:image/jpeg;base64,' + item['base64'] }} width={300} height={180} />
+                                <Image resizeMode='contain' source={{ uri: 'data:image/jpeg;base64,' + item['base64'] }} width={300} height={180} />
                             </View>
                         )}
                     />

@@ -16,25 +16,22 @@ import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
 LogBox.ignoreLogs(['new NativeEventEmitter']);
 import { Text, TextInput, Button } from 'react-native-paper';
-import { useTheme } from 'react-native-paper';
 import Video from 'react-native-video';
-import { useFocusEffect } from '@react-navigation/native';
 import { useIsFocused } from "@react-navigation/native";
-
-const RESOURCE_KEY = "06495201accc4dfcaf847bb1f71252aa";
-const RESOURCE_REGION = "australiaeast";
+import useAsyncStorage from '../storage/useAsyncStorage';
 
 const SpeechAIScreen = () => {
 
+  const [speechResource] = useAsyncStorage("speechResource", null);
+
   const isFocused = useIsFocused();
-  const [theme, setTheme] = useState();
 
   const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
   const [pauseFile, setPauseFile] = useState(true);
   const [muteFile, setMuteFile] = useState(true);
 
-  const key = RESOURCE_KEY;
-  const region = RESOURCE_REGION;
+  const key = speechResource?.key;
+  const region = speechResource?.region;
 
   const channels = 1;
   const bitsPerChannel = 16;

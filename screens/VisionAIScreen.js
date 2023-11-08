@@ -1,12 +1,15 @@
 import { Image, ImageBackground, StyleSheet, View, PermissionsAndroid, ScrollView, Image as RNimage } from 'react-native'
 import React, { useRef, useState } from 'react'
 import { Text, Button, Checkbox, IconButton } from 'react-native-paper'
-import { ImageAnalysisVApi } from '../api/ImageAnalysisApi';
+import  ImageAnalysisApi from '../api/ImageAnalysisApi';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import Canvas, { Image as CanvasImage } from 'react-native-canvas';
 import Slider from '@react-native-community/slider';
+import useAsyncStorage from '../storage/useAsyncStorage';
 
 const VisionAIScreen = () => {
+
+    const [computerResource] = useAsyncStorage("computerResource", null);
     const [base64Data, setBase64Data] = useState();
     const [imageFile, setImageFile] = useState();
     const [tags, setTags] = useState();
@@ -111,6 +114,11 @@ const VisionAIScreen = () => {
 
     const analyse = async () => {
 
+        const RESOURCE_KEY = computerResource?.key;
+        const RESOURCE_REGION = computerResource?.region;
+
+        const [ImageAnalysisVApi] = await ImageAnalysisApi({ RESOURCE_KEY, RESOURCE_REGION });
+
         try {
 
             if (base64Data == undefined) {
@@ -125,7 +133,7 @@ const VisionAIScreen = () => {
             setTags(tags);
 
             const boundingBoxes = resp?.data?.peopleResult?.values;
-         
+
             if (boundingBoxes?.length == 0) {
                 setBoundingBoxes([]);
             }
@@ -134,7 +142,7 @@ const VisionAIScreen = () => {
             }
 
             const filteredObjectBoundingBoxes = resp?.data?.objectsResult?.values;
-            const objectBoundingBoxes = filteredObjectBoundingBoxes?.filter((item) =>item.tags[0].name != "person");
+            const objectBoundingBoxes = filteredObjectBoundingBoxes?.filter((item) => item.tags[0].name != "person");
 
             if (objectBoundingBoxes?.length == 0) {
                 setObjectBoundingBoxes([]);
@@ -165,10 +173,10 @@ const VisionAIScreen = () => {
         const context = canvas.getContext('2d');
         const image2 = new CanvasImage(canvas);
 
-        if  (base64Data == undefined) {
+        if (base64Data == undefined) {
             image2.src = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';
         }
-        else{
+        else {
             image2.src = 'data:image/jpeg;base64,' + base64Data;
         }
 
@@ -180,7 +188,7 @@ const VisionAIScreen = () => {
                 const pBoundingBoxes = boundingBoxes?.filter((item) => item.confidence >= personConfidence);
 
                 const personboundingBoxes = pBoundingBoxes?.map((item) => item.boundingBox);
-        
+
                 personboundingBoxes.forEach(element => {
 
                     let percentBx = (100 * (element.x / imageWidth)),
@@ -207,7 +215,7 @@ const VisionAIScreen = () => {
             if (!objectBoundingBoxes?.length == 0 && checked == false) {
 
                 const objBoundingBoxes = objectBoundingBoxes?.filter((item) => item.tags[0].confidence >= objectConfidence);
-              
+
                 objBoundingBoxes.forEach(element => {
 
                     let percentBx = (100 * (element.boundingBox.x / imageWidth)),
@@ -281,7 +289,7 @@ const VisionAIScreen = () => {
                 <ScrollView>
                     <Text style={styles.imageText}>{tags?.map(u => u).join(", ")}</Text>
                 </ScrollView>
-                <Checkbox.Item  label="People only" status={checked ? 'checked' : 'unchecked'}
+                <Checkbox.Item label="People only" status={checked ? 'checked' : 'unchecked'}
                     onPress={() => {
                         setChecked(!checked);
                     }}

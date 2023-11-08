@@ -1,12 +1,23 @@
 import { View, StyleSheet, ImageBackground, Alert, Keyboard, Image, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
 import { Text, TextInput, IconButton } from 'react-native-paper';
-
-const endpoint = "https://openaimodules102.openai.azure.com/";
-const key = "064e47e4ffce44678ac1fda5522f8f81";
-
+import useAsyncStorage from '../storage/useAsyncStorage';
 
 const OpenAIDallEScreen = () => {
+
+    const [openAIResource] = useAsyncStorage("openAIResource", null);
+  
+    var endpoint = "endpoint";
+    var key = "key";
+
+    if (openAIResource?.key) {
+        key = openAIResource?.key;
+     }
+
+    if (openAIResource?.endpoint) {
+        endpoint = openAIResource?.endpoint;
+    }
+
     const [isLoading, setIsLoading] = useState(false);
     const [systemText, SetSystemText] = useState("");
     const [imageURL, SetImageURL] = useState("https://dalleproduse.blob.core.windows.net/private/images/66968d53-71d7-42cf-9e62-0219a282c5d0/generated_00.png?se=2023-11-07T06%3A09%3A01Z&sig=vsFV7Y8aabb%2BLediC%2BLEZhy1uIs5kUFnl0jzCEtu4mU%3D&ske=2023-11-08T14%3A45%3A50Z&skoid=09ba021e-c417-441c-b203-c81e5dcd7b7f&sks=b&skt=2023-11-01T14%3A45%3A50Z&sktid=33e01921-4d64-4f8c-a055-5bdaffd5e33d&skv=2020-10-02&sp=r&spr=https&sr=b&sv=2020-10-02");

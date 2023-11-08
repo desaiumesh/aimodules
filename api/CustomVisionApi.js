@@ -1,24 +1,19 @@
 import axios from 'axios'
 
-const PROJECTID = "ba91a0bb-1f42-4777-8ce3-897692e71d5f";
+const CustomVisionApi = ({projectId, trainingKey, trainingUrl, predictionKey, predictionUrl,publicationPredictionKey}) => {
+  
+ const CustomVisionGetTagsApi = async () => {
 
-const TRAININGKEY = "263c89ff01984f109a6f9b8b040e1a20";
-const baseTrainingUrl = `https://customaiimage.cognitiveservices.azure.com`;
+    const url = `${trainingUrl}/customvision/v3.0/Training` +
+        `/projects/${projectId}/tags`;
 
-const PREDICTIONKEY = "fb92bb0d21b74cdfbeb9076b6b9d4b1c";
-const basePredictionUrl = `https://customaiimage-prediction.cognitiveservices.azure.com`;
-const PUBLICATIONPREDICTIONKEY =`/subscriptions/bccebad9-cd2c-4d0b-83e5-0f0d6747cecc/resourceGroups/AI-102-ResourceGroup/providers/Microsoft.CognitiveServices/accounts/CustomAIImage-Prediction`
-
-const CustomVisionGetTagsApi = async () => {
-
-    const url = `${baseTrainingUrl}/customvision/v3.0/Training` +
-        `/projects/${PROJECTID}/tags`;
+        console.log(url);
 
     try {
         const response = await axios.get(url, {
             headers: {
                 "Content-Type": "application/json",
-                'Training-key': TRAININGKEY,
+                'Training-key': trainingKey,
             },
         });
         return response;
@@ -29,14 +24,18 @@ const CustomVisionGetTagsApi = async () => {
 
 const CustomVisionGetIterationsApi = async () => {
 
-    const url = `${baseTrainingUrl}/customvision/v3.0/Training` +
-        `/projects/${PROJECTID}/iterations`;
+    console.log('CustomVisionGetIterationsApi');
+
+    const url = `${trainingUrl}/customvision/v3.0/Training` +
+        `/projects/${projectId}/iterations`;
+
+    console.log(url);
 
     try {
         const response = await axios.get(url, {
             headers: {
                 "Content-Type": "application/json",
-                'Training-key': TRAININGKEY,
+                'Training-key': trainingKey,
             },
         });
         return response;
@@ -47,14 +46,14 @@ const CustomVisionGetIterationsApi = async () => {
 
 const CustomVisionGetIterationApi = async ({ iterationId }) => {
 
-    const url = `${baseTrainingUrl}/customvision/v3.0/Training` +
-        `/projects/${PROJECTID}/iterations/${iterationId}`;
+    const url = `${trainingUrl}/customvision/v3.0/Training` +
+        `/projects/${projectId}/iterations/${iterationId}`;
 
     try {
         const response = await axios.get(url, {
             headers: {
                 "Content-Type": "application/json",
-                'Training-key': TRAININGKEY,
+                'Training-key': trainingKey,
             },
         });
         return response;
@@ -66,14 +65,14 @@ const CustomVisionGetIterationApi = async ({ iterationId }) => {
 
 const CustomVisionCreateTagApi = async ({ name }) => {
 
-    const url = `${baseTrainingUrl}/customvision/v3.0/Training` +
-        `/projects/${PROJECTID}/tags?name=${name}`;
+    const url = `${trainingUrl}/customvision/v3.0/Training` +
+        `/projects/${projectId}/tags?name=${name}`;
 
     try {
         const response = await axios.post(url, '', {
             headers: {
                 "Content-Type": "application/json",
-                'Training-key': TRAININGKEY,
+                'Training-key': trainingKey,
             },
         });
         return response;
@@ -84,14 +83,14 @@ const CustomVisionCreateTagApi = async ({ name }) => {
 
 const CustomVisionUploadImagesApi = async ({ tagArray, base64 }) => {
 
-    const url = `${baseTrainingUrl}/customvision/v3.0/Training` +
-        `/projects/${PROJECTID}/images?tagIds=${tagArray}`;
+    const url = `${trainingUrl}/customvision/v3.0/Training` +
+        `/projects/${projectId}/images?tagIds=${tagArray}`;
 
     try {
         const response = await axios.post(url, base64, {
             headers: {
                 "Content-Type": "application/octet-stream",
-                'Training-key': TRAININGKEY,
+                'Training-key': trainingKey,
             },
         });
         return response;
@@ -102,8 +101,8 @@ const CustomVisionUploadImagesApi = async ({ tagArray, base64 }) => {
 
 const CustomVisionTrainApi = async () => {
 
-    const url = `${baseTrainingUrl}/customvision/v3.0/Training` +
-        `/projects/${PROJECTID}/train`;
+    const url = `${trainingUrl}/customvision/v3.0/Training` +
+        `/projects/${projectId}/train`;
 
         console.log(url);
 
@@ -111,7 +110,7 @@ const CustomVisionTrainApi = async () => {
         const response = await axios.post(url, '', {
             headers: {
                 "Content-Type": "application/json",
-                'Training-key': TRAININGKEY,
+                'Training-key': trainingKey,
             },
         });
         return response;
@@ -122,14 +121,14 @@ const CustomVisionTrainApi = async () => {
 
 const CustomVisionPublishIterationApi = async ({iterationId, publishName }) => {
 
-    const url = `${baseTrainingUrl}/customvision/v3.0/training/projects/` +
-        `${PROJECTID}/iterations/${iterationId}/publish?predictionId=${PUBLICATIONPREDICTIONKEY}&publishName=${publishName}`;
+    const url = `${trainingUrl}/customvision/v3.0/training/projects/` +
+        `${projectId}/iterations/${iterationId}/publish?predictionId=${publicationPredictionKey}&publishName=${publishName}`;
 
     try {
         const response = await axios.post(url,'', {
             headers: {
                 "Content-Type": "application/json",
-                'Training-key': TRAININGKEY,
+                'Training-key': trainingKey,
             },
         });
         return response;
@@ -140,8 +139,8 @@ const CustomVisionPublishIterationApi = async ({iterationId, publishName }) => {
 
 const CustomVisionTestApi = async ({ base64, iteration }) => {
 
-    const url = `${basePredictionUrl}/customvision/v3.0/Prediction/` +
-        `${PROJECTID}/classify/iterations/${iteration}/image`;
+    const url = `${predictionUrl}/customvision/v3.0/Prediction/` +
+        `${projectId}/classify/iterations/${iteration}/image`;
 
         console.log(url);
 
@@ -149,7 +148,7 @@ const CustomVisionTestApi = async ({ base64, iteration }) => {
         const response = await axios.post(url, base64, {
             headers: {
                 "Content-Type": "application/octet-stream",
-                'Prediction-Key': PREDICTIONKEY,
+                'Prediction-Key': predictionKey,
             },
         });
         return response;
@@ -159,5 +158,9 @@ const CustomVisionTestApi = async ({ base64, iteration }) => {
 }
 
 
-export {CustomVisionGetTagsApi,CustomVisionGetIterationsApi,CustomVisionGetIterationApi,
-     CustomVisionCreateTagApi, CustomVisionUploadImagesApi,CustomVisionTrainApi,CustomVisionPublishIterationApi, CustomVisionTestApi };
+return [CustomVisionGetTagsApi,CustomVisionGetIterationsApi,CustomVisionGetIterationApi,
+     CustomVisionCreateTagApi, CustomVisionUploadImagesApi,CustomVisionTrainApi,CustomVisionPublishIterationApi, CustomVisionTestApi ];
+
+};
+
+export default CustomVisionApi;

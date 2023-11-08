@@ -3,18 +3,31 @@ import React, { useEffect, useState } from 'react'
 import { Text, Button, TextInput, IconButton, Avatar, Divider } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 import AIChat from '../components/AIChat';
+import useAsyncStorage from '../storage/useAsyncStorage';
 
-const endpoint = "https://openaimodules102.openai.azure.com/";
-const key = "064e47e4ffce44678ac1fda5522f8f81";
 
 const OpenAIChatScreen = () => {
+
+    const [openAIResource] = useAsyncStorage("openAIResource", null);
+  
+    var endpoint = "endpoint";
+    var key = "key";
+
+    if (openAIResource?.key) {
+        key = openAIResource?.key;
+     }
+
+    if (openAIResource?.endpoint) {
+        endpoint = openAIResource?.endpoint;
+    }
+
     const [systemText, SetSystemText] = useState("You are an AI assistant that helps people find information.");
     const [senderText, SetSenderText] = useState("");
     const [messages, setMessages] = useState([]);
 
     const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
 
-    const client = new OpenAIClient(endpoint,  new AzureKeyCredential(key));
+    const client = new OpenAIClient(endpoint, new AzureKeyCredential(key));
 
     const clearChat = () => {
         setMessages([]);
@@ -55,14 +68,14 @@ const OpenAIChatScreen = () => {
             resizeMode="cover">
             <View style={styles.container}>
                 <TextInput placeholder='You are an AI assistant that helps people find information.' style={styles.textInput}
-                 multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
+                    multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
 
-                <View style= {styles.chatcontainer}>
+                <View style={styles.chatcontainer}>
                     <Text style={styles.text}>Chat session</Text>
                     <IconButton icon="close" mode="contained" onPress={() => { clearChat() }}>Publish</IconButton>
                 </View>
-                <Divider/>
-                <AIChat messages={messages} senderText={senderText} SetSenderText={SetSenderText}  onPress={() => { sendMessage() }} />
+                <Divider />
+                <AIChat messages={messages} senderText={senderText} SetSenderText={SetSenderText} onPress={() => { sendMessage() }} />
             </View>
         </ImageBackground>
     )
@@ -91,7 +104,7 @@ const styles = StyleSheet.create({
         alignSelf: 'flex-end',
         alignItems: 'flex-end',
     },
-    chatcontainer:{
+    chatcontainer: {
         flexDirection: 'row',
         alignItems: 'center',
     },

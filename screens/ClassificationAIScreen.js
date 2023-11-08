@@ -2,16 +2,35 @@ import { StyleSheet, View, ImageBackground, Image, PermissionsAndroid, ScrollVie
 import React, { useState } from 'react'
 import { Text, IconButton } from 'react-native-paper';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
-import { CustomVisionApi, CustomVisionGetIterationsApi, CustomVisionTagsApi, CustomVisionTestApi, CustomVisionTrainApi, CustomVisionUploadImagesApi } from '../api/CustomVisionApi';
+import CustomVisionApi from '../api/CustomVisionApi';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
+import useAsyncStorage from '../storage/useAsyncStorage';
 
 const ClassificationAIScreen = () => {
+
+  const [customVisionResource] = useAsyncStorage("customVisionResource", null);
+
+  const projectId = customVisionResource?.projectId;
+  const trainingKey = customVisionResource?.trainingKey;
+  const trainingUrl = customVisionResource?.trainingUrl;
+
+  const predictionKey = customVisionResource?.predictionKey;
+  const predictionUrl = customVisionResource?.predictionUrl;
+  const publicationPredictionKey = customVisionResource?.publicationPredictionKey;
+
+
   const [base64Data, setBase64Data] = useState();
   const [selectedIteration, setSelectedIteration] = useState();
   const [iterations, setIterations] = useState([]);
   const [predictions, setPredictions] = useState();
+
+  const [, CustomVisionGetIterationsApi, , , , , , CustomVisionTestApi] =
+    CustomVisionApi({
+      projectId, trainingKey, trainingUrl,
+      predictionKey, predictionUrl, publicationPredictionKey
+    });
 
   const checkPermissions = async () => {
     if (Platform.OS === 'android') {
@@ -73,6 +92,9 @@ const ClassificationAIScreen = () => {
 
     const resp = await CustomVisionGetIterationsApi();
 
+    console.log('resp');
+    console.log(resp.data);
+
     if (resp.status == 200) {
 
       setIterations([]);
@@ -89,10 +111,13 @@ const ClassificationAIScreen = () => {
       });
 
       setIterations(iterationsArray);
-      console.log(resp.data);
+      console.log('iterationsArray');
+      console.log(iterationsArray);
+
     }
     else {
       alert('Error in getting tags');
+
     }
   };
 
@@ -165,10 +190,10 @@ const ClassificationAIScreen = () => {
           {
             predictions?.map((item) => {
               return (
-              <View style={styles.predictionContainer} key={item.key}>
-                <Text style={styles.predictionText}>{item.tagName} :</Text>
-                <Text style={styles.predictionText}>{(item.probability * 100).toFixed(4)} %</Text>
-              </View>
+                <View style={styles.predictionContainer} key={item.key}>
+                  <Text style={styles.predictionText}>{item.tagName} :</Text>
+                  <Text style={styles.predictionText}>{(item.probability * 100).toFixed(4)} %</Text>
+                </View>
               );
             })
           }
@@ -189,13 +214,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     gap: 10,
   },
-  predictionContainer:{
-    flexDirection :'row',
-    justifyContent:'space-between',
-    marginTop:10,
-    marginRight:80,
-    marginLeft:80,
-    fontWeight:'bold',
+  predictionContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 10,
+    marginRight: 80,
+    marginLeft: 80,
+    fontWeight: 'bold',
   },
   ImageContainer: {
     marginRight: 20,
