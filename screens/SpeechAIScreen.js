@@ -1,14 +1,10 @@
-import React, { Component, useState, useEffect, useLayoutEffect } from 'react';
-import {
-  ImageBackground, PermissionsAndroid, StyleSheet,
-  View, TouchableOpacity, LogBox, ScrollView, TouchableHighlight
-} from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { ImageBackground, PermissionsAndroid, StyleSheet, View, LogBox, ScrollView } from 'react-native';
 import 'react-native-get-random-values';
 import 'node-libs-react-native/globals';
 import {
-  AudioConfig, AudioInputStream,
-  ResultReason, SpeechConfig, SpeechTranslationConfig,
-  TranslationRecognizer, SpeechSynthesizer, SpeakerAudioDestination, AudioOutputStream, CancellationDetails
+  AudioConfig, AudioInputStream, ResultReason, SpeechConfig, SpeechTranslationConfig,
+  TranslationRecognizer, SpeechSynthesizer, AudioOutputStream, CancellationDetails, AutoDetectSourceLanguageConfig, LanguageIdMode
 } from 'microsoft-cognitiveservices-speech-sdk';
 import AudioRecord from 'react-native-live-audio-stream';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -29,6 +25,11 @@ const SpeechAIScreen = () => {
   const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
   const [pauseFile, setPauseFile] = useState(true);
   const [muteFile, setMuteFile] = useState(true);
+
+  const [storedAutoFile, setStoredAutoFile] = useState("/data/user/0/com.aimodules/files/aiAutoSpeak.mp3");
+  const [isAutoSpeak, setIsAutoSpeak] = useState(false);
+  const [pauseAutoFile, setPauseAutoFile] = useState(true);
+  const [muteAutoFile, setMuteAutoFile] = useState(true);
 
   const key = speechResource?.key;
   const region = speechResource?.region;
@@ -73,9 +74,12 @@ const SpeechAIScreen = () => {
 
   useEffect(() => {
 
-    if(isFocused){
-        setMuteFile(true);
-        setPauseFile(false);
+    if (isFocused) {
+      setMuteFile(true);
+      setPauseFile(false);
+
+      setMuteAutoFile(true);
+      setPauseAutoFile(false);
     }
 
     allLanguageData.forEach(element => {
@@ -139,9 +143,62 @@ const SpeechAIScreen = () => {
     }
   };
 
+
+  const createTranslationRecognizer = async (isAuto) => {
+
+    const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
+    const sourcelanguage = sourceLanguageObj.LanguageCode;
+    const sourceLanguageLocale47 = sourceLanguageObj.LocaleBCP47;
+
+    const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
+    const targetLanguage = targetLanguageObj.LanguageCode;
+    const targetLanguageLocaleBCP47 = targetLanguageObj.LocaleBCP47;
+
+      //creates a push stream system which allows new data to be pushed to the recognizer
+      const pushStream = AudioInputStream.createPushStream();
+      const options = { sampleRate, channels, bitsPerChannel, audioSource: 6, };
+
+      AudioRecord.init(options);
+      //everytime data is recieved from the mic, push it to the pushStream
+      AudioRecord.on('data', (data) => {
+        const pcmData = Buffer.from(data, 'base64');
+        pushStream.write(pcmData);
+      });
+
+      AudioRecord.start();
+
+      if (isAuto) {
+        // Please replace the service region with your region (e.g. "westus").
+        var v2EndpointUrl = new URL(`wss://${region}.stt.speech.microsoft.com/speech/universal/v2`);
+
+        const speechTranslationConfig = SpeechTranslationConfig.fromEndpoint(v2EndpointUrl, key);
+        speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
+
+        speechTranslationConfig.addTargetLanguage(sourcelanguage);
+        speechTranslationConfig.addTargetLanguage(targetLanguage);
+
+        const audioConfig = AudioConfig.fromStreamInput(pushStream);
+        var autoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig.fromLanguages([sourceLanguageLocale47, targetLanguageLocaleBCP47]);
+        autoDetectSourceLanguageConfig.mode = LanguageIdMode.Continuous;
+        recognizer = new TranslationRecognizer.FromConfig(speechTranslationConfig, autoDetectSourceLanguageConfig, audioConfig);
+
+      }
+      else {
+        const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, region);
+        speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
+        speechTranslationConfig.addTargetLanguage(targetLanguage);
+
+        const audioConfig = AudioConfig.fromStreamInput(pushStream);
+        recognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
+      }
+
+  };
+
   //sets up speechrecognizer and audio stream
-  const initializeAudio = async () => {
+  const startAudio = async (isAuto) => {
+  
     setPauseFile(true);
+    setPauseAutoFile(true);
 
     if (!selectedSource) {
       alert("Please select source language");
@@ -155,38 +212,11 @@ const SpeechAIScreen = () => {
 
     await checkPermissions();
 
-    const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
-    const language = sourceLanguageObj.LocaleBCP47;
-
-    const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
-    const targetLanguage = targetLanguageObj.LanguageCode;
+    setIsAutoSpeak(isAuto);
 
     if (!initializedCorrectly) {
 
-      //creates a push stream system which allows new data to be pushed to the recognizer
-      const pushStream = AudioInputStream.createPushStream();
-      const options = {
-        sampleRate,
-        channels,
-        bitsPerChannel,
-        audioSource: 6,
-      };
-
-      AudioRecord.init(options);
-      //everytime data is recieved from the mic, push it to the pushStream
-      AudioRecord.on('data', (data) => {
-        const pcmData = Buffer.from(data, 'base64');
-        pushStream.write(pcmData);
-      });
-
-      AudioRecord.start();
-
-      const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, region);
-      speechTranslationConfig.speechRecognitionLanguage = language;
-      speechTranslationConfig.addTargetLanguage(targetLanguage);
-
-      const audioConfig = AudioConfig.fromStreamInput(pushStream);
-      recognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
+      createTranslationRecognizer(isAuto);
 
       setSourceLanguagesText("");
       setTargetLanguagesText("");
@@ -200,18 +230,39 @@ const SpeechAIScreen = () => {
 
         if (reason === ResultReason.TranslatedSpeech) {
 
-          sourceLText = sourceLText + `${e?.result?.text}`;
-          setSourceLanguagesText(sourceLText);
+          if (isAuto) {
+            let values = JSON.parse(e?.result?.privProperties?.privValues);
 
-          console.log(e?.result);
+            let primaryLanguage = values?.SpeechPhrase?.PrimaryLanguage?.Language;
+            console.log(primaryLanguage);
 
-          for (let object of e?.result?.translations?.privMap?.privValues) {
-            targetLText = targetLText + `${object}.`;
+            let primaryLanguageText = values?.SpeechPhrase?.DisplayText;
+
+            sourceLText = sourceLText + `${primaryLanguageText}`;
+            setSourceLanguagesText(sourceLText);
+
+            console.log(values?.Translations);
+
+            for (let translation of values?.Translations) {
+
+              if (translation?.DisplayText !== primaryLanguageText) {
+                targetLText = targetLText + `${translation?.DisplayText}.`;
+              }
+            }
+
+            setTargetLanguagesText(targetLText);
           }
+          else {
+            sourceLText = sourceLText + `${e?.result?.text}`;
+            setSourceLanguagesText(sourceLText);
 
-          setTargetLanguagesText(targetLText);
+            for (let object of e?.result?.translations?.privMap?.privValues) {
+              targetLText = targetLText + `${object}.`;
+            }
+
+            setTargetLanguagesText(targetLText);
+          }
         }
-
       };
 
       recognizer.startContinuousRecognitionAsync(() => {
@@ -227,24 +278,33 @@ const SpeechAIScreen = () => {
 
   //stops the audio stream and recognizer
   const stopAudio = async () => {
+   
     AudioRecord.stop();
+
     if (!!recognizer) {
       recognizer.stopContinuousRecognitionAsync();
       initializedCorrectly = false;
     }
 
-    await synthetize()
-  };
+    let text = targetLanguagesText;
+    let fileName = '/aiaudio6.mp3';
 
-  const synthetize = async () => {
-
-    const speechConfig = SpeechConfig.fromSubscription(key, region);
+    if(isAutoSpeak){
+      fileName = '/aiAutoSpeak.mp3';
+    }
 
     const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
     const targetVoice = targetLanguageObj.Voice;
 
+    await synthetiseAudio(fileName, text, targetVoice);
+  };
+
+
+  const synthetiseAudio = async (fileName, text, targetVoice) => {
+
+    const speechConfig = SpeechConfig.fromSubscription(key, region);
+
     speechConfig.speechSynthesisVoiceName = targetVoice;
-    console.log(targetVoice);
 
     var stream = AudioOutputStream.createPullStream();
     let streamConfig = AudioConfig.fromStreamOutput(stream);
@@ -258,37 +318,36 @@ const SpeechAIScreen = () => {
       var arrayBufferData = new ArrayBuffer(320000);
       let st = await stream.read(arrayBufferData);
 
-      console.log(arrayBufferData.byteLength);
-
-      console.log("write to file");
       var RNFS = require('react-native-fs');
-      var path = RNFS.DocumentDirectoryPath + '/aiaudio6.mp3';
-      console.log(path);
+      var path = RNFS.DocumentDirectoryPath + fileName;
 
       var bt = Buffer.from(arrayBufferData).toString('base64');
 
       RNFS.writeFile(path, bt, 'base64')
         .then((success) => {
-          console.log('FILE WRITTEN!');
+          console.log('FILE WRITTEN!', path);
         })
         .catch((err) => {
           console.log(err.message);
         });
 
-      console.log("synthesisCompleted1");
-
-      setStoredFile(path);
-      setMuteFile(false);
-      setPauseFile(false);
+      if (!isAutoSpeak) {
+        setStoredFile(path);
+        setMuteFile(false);
+        setPauseFile(false);
+        setIsAutoSpeak(false);
+      }
+      else {
+        setStoredAutoFile(path);
+        setMuteAutoFile(false);
+        setPauseAutoFile(false);
+      }
     };
 
-    // The synthesis started event signals that the synthesis is started.
     speechSynthesizer.synthesisStarted = function (s, e) {
       console.log("(synthesis started)");
     };
 
-    // The event signals that the service has stopped processing speech.
-    // This can happen when an error is encountered.
     speechSynthesizer.SynthesisCanceled = function (s, e) {
       var cancellationDetails = CancellationDetails.fromResult(e.result);
       var str = "(cancel) Reason: " + sdk.CancellationReason[cancellationDetails.reason];
@@ -297,9 +356,6 @@ const SpeechAIScreen = () => {
       }
       console.log(str);
     };
-
-    console.log(targetLanguagesText);
-    let text = targetLanguagesText;
 
     speechSynthesizer.speakTextAsync(
       text,
@@ -352,8 +408,9 @@ const SpeechAIScreen = () => {
 
       <View style={styles.buttonConatiner}>
 
-        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { initializeAudio() }}>Start</Button>
+        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { startAudio(false) }}>Start</Button>
         <Button style={styles.button} icon="microphone-off" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
+        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { startAudio(true) }}>Auto</Button>
 
       </View>
       <ScrollView>
@@ -367,6 +424,14 @@ const SpeechAIScreen = () => {
           style={{ width: 1, height: 1 }}
           muted={muteFile}
           paused={pauseFile} />
+
+        <Video
+          source={{ uri: 'file:///data/user/0/com.aimodules/files/aiAutoSpeak.mp3' }}
+          shouldPlay={true}
+          resizeMode="cover"
+          style={{ width: 1, height: 1 }}
+          muted={muteAutoFile}
+          paused={pauseAutoFile} />
 
       </ScrollView>
     </View>
@@ -439,7 +504,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   button: {
-    margin: 20,
+    margin: 5,
   }
 });
 

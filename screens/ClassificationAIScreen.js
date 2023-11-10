@@ -82,6 +82,9 @@ const ClassificationAIScreen = () => {
       const result = await launchImageLibrary(options);
       setBase64Data(result?.assets[0].base64);
 
+      console.log('result');
+      console.log(result?.assets[0].base64);
+
     } catch (error) {
       console.log(error);
 
