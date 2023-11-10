@@ -1,9 +1,9 @@
 import { StyleSheet, View, ImageBackground, Image, PermissionsAndroid, ScrollView } from 'react-native'
-import React, { useState, useEffect } from 'react'
-import { Text, IconButton, TextInput, Divider, Modal, Portal, List } from 'react-native-paper';
+import React, { useState } from 'react'
+import { Text, IconButton, TextInput, Modal, Portal, List } from 'react-native-paper';
 import { SelectList } from 'react-native-dropdown-select-list'
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
+import {launchImageLibrary} from 'react-native-image-picker';
 import CustomVisionApi from '../api/CustomVisionApi';
 import { appStyles } from '../styles/appStyle';
 import Carousel from 'react-native-reanimated-carousel';

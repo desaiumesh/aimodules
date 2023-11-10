@@ -20,8 +20,7 @@ const LoginAIScreen = ({ color }) => {
 
     const login = async () => {
 
-        if(!isBiometricsEnabled)
-        {
+        if (!isBiometricsEnabled) {
             isLoggedIn();
             return;
         }

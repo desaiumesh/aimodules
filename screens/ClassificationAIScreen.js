@@ -1,7 +1,7 @@
 import { StyleSheet, View, ImageBackground, Image, PermissionsAndroid, ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { Text, IconButton } from 'react-native-paper';
-import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import CustomVisionApi from '../api/CustomVisionApi';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
@@ -111,9 +111,6 @@ const ClassificationAIScreen = () => {
       });
 
       setIterations(iterationsArray);
-      console.log('iterationsArray');
-      console.log(iterationsArray);
-
     }
     else {
       alert('Error in getting tags');
