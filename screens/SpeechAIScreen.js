@@ -49,6 +49,8 @@ const SpeechAIScreen = () => {
   const [sourceLanguagesText, setSourceLanguagesText] = useState("");
   const [targetLanguagesText, setTargetLanguagesText] = useState("");
 
+  const [autoLanguageVoice, setAutoLanguageVoice] = useState("");
+
   const allLanguageData = [
     { key: '1', value: '', LanguageName: "English", LanguageGenderName: "English (United States) Female", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-JennyNeural" },
     { key: '2', value: '', LanguageName: "English", LanguageGenderName: "English (United States) Male", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-GuyNeural" },
@@ -84,12 +86,12 @@ const SpeechAIScreen = () => {
 
     allLanguageData.forEach(element => {
 
-      const found = sourceLanguages.some(el => el.value === element.LanguageName)
+      const found = sourceLanguages.some(el => el.value === element.LanguageGenderName)
 
       if (!found) {
         sourceLanguages.push({
           key: element.key,
-          value: element.LanguageName,
+          value: element.LanguageGenderName,
         });
       }
     });
@@ -149,10 +151,12 @@ const SpeechAIScreen = () => {
     const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
     const sourcelanguage = sourceLanguageObj.LanguageCode;
     const sourceLanguageLocale47 = sourceLanguageObj.LocaleBCP47;
+    const sourceLanguageGenderName = sourceLanguageObj.LanguageGenderName;
 
     const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
     const targetLanguage = targetLanguageObj.LanguageCode;
     const targetLanguageLocaleBCP47 = targetLanguageObj.LocaleBCP47;
+    const targetLanguageGenderName = targetLanguageObj.LanguageGenderName;
 
       //creates a push stream system which allows new data to be pushed to the recognizer
       const pushStream = AudioInputStream.createPushStream();
@@ -224,6 +228,12 @@ const SpeechAIScreen = () => {
       let sourceLText = "";
       let targetLText = "";
 
+      const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
+      const sourceLanguageGenderName = sourceLanguageObj.LanguageGenderName;
+  
+      const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
+      const targetLanguageGenderName = targetLanguageObj.LanguageGenderName;
+
       recognizer.recognized = (s, e) => {
 
         let reason = e.result.reason;
@@ -247,6 +257,17 @@ const SpeechAIScreen = () => {
 
               if (translation?.DisplayText !== primaryLanguageText) {
                 targetLText = targetLText + `${translation?.DisplayText}.`;
+               
+                console.log("translation stingify1");
+              
+                const foundLanguages = allLanguageData?.find(el => el.LanguageCode === translation?.Language
+                   && (el.LanguageGenderName === sourceLanguageGenderName ||
+                     el.LanguageGenderName === targetLanguageGenderName));
+                
+                console.log("translation stingify");
+                console.log(JSON.stringify(foundLanguages));
+
+                setAutoLanguageVoice(foundLanguages.Voice);
               }
             }
 
@@ -289,12 +310,13 @@ const SpeechAIScreen = () => {
     let text = targetLanguagesText;
     let fileName = '/aiaudio6.mp3';
 
+    const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
+    let targetVoice = targetLanguageObj.Voice;
+
     if(isAutoSpeak){
       fileName = '/aiAutoSpeak.mp3';
+      targetVoice = autoLanguageVoice;
     }
-
-    const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
-    const targetVoice = targetLanguageObj.Voice;
 
     await synthetiseAudio(fileName, text, targetVoice);
   };
