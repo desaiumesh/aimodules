@@ -11,7 +11,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
 LogBox.ignoreLogs(['new NativeEventEmitter']);
-import { Text, TextInput, Button } from 'react-native-paper';
+import { Text, TextInput, Button, useTheme  } from 'react-native-paper';
 import Video from 'react-native-video';
 import { useIsFocused } from "@react-navigation/native";
 import useAsyncStorage from '../storage/useAsyncStorage';
@@ -30,6 +30,9 @@ const SpeechAIScreen = () => {
   const [isAutoSpeak, setIsAutoSpeak] = useState(false);
   const [pauseAutoFile, setPauseAutoFile] = useState(true);
   const [muteAutoFile, setMuteAutoFile] = useState(true);
+
+  const [isMicOn, setIsMicOn] = useState(false);
+  const theme = useTheme();
 
   const key = speechResource?.key;
   const region = speechResource?.region;
@@ -203,7 +206,7 @@ const SpeechAIScreen = () => {
   
     setPauseFile(true);
     setPauseAutoFile(true);
-
+   
     if (!selectedSource) {
       alert("Please select source language");
       return;
@@ -221,6 +224,7 @@ const SpeechAIScreen = () => {
     if (!initializedCorrectly) {
 
       createTranslationRecognizer(isAuto);
+      setIsMicOn(true);
 
       setSourceLanguagesText("");
       setTargetLanguagesText("");
@@ -244,29 +248,21 @@ const SpeechAIScreen = () => {
             let values = JSON.parse(e?.result?.privProperties?.privValues);
 
             let primaryLanguage = values?.SpeechPhrase?.PrimaryLanguage?.Language;
-            console.log(primaryLanguage);
 
             let primaryLanguageText = values?.SpeechPhrase?.DisplayText;
 
             sourceLText = sourceLText + `${primaryLanguageText}`;
             setSourceLanguagesText(sourceLText);
 
-            console.log(values?.Translations);
-
             for (let translation of values?.Translations) {
 
               if (translation?.DisplayText !== primaryLanguageText) {
                 targetLText = targetLText + `${translation?.DisplayText}.`;
-               
-                console.log("translation stingify1");
               
                 const foundLanguages = allLanguageData?.find(el => el.LanguageCode === translation?.Language
                    && (el.LanguageGenderName === sourceLanguageGenderName ||
                      el.LanguageGenderName === targetLanguageGenderName));
                 
-                console.log("translation stingify");
-                console.log(JSON.stringify(foundLanguages));
-
                 setAutoLanguageVoice(foundLanguages.Voice);
               }
             }
@@ -299,8 +295,9 @@ const SpeechAIScreen = () => {
 
   //stops the audio stream and recognizer
   const stopAudio = async () => {
-   
+
     AudioRecord.stop();
+    setIsMicOn(false);
 
     if (!!recognizer) {
       recognizer.stopContinuousRecognitionAsync();
@@ -335,8 +332,6 @@ const SpeechAIScreen = () => {
 
     // The event synthesis completed signals that the synthesis is completed.
     speechSynthesizer.synthesisCompleted = async function (s, e) {
-      console.log("synthesisCompleted");
-
       var arrayBufferData = new ArrayBuffer(320000);
       let st = await stream.read(arrayBufferData);
 
@@ -430,9 +425,9 @@ const SpeechAIScreen = () => {
 
       <View style={styles.buttonConatiner}>
 
-        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { startAudio(false) }}>Start</Button>
+        <Button style={styles.button} textColor={(isMicOn & !isAutoSpeak)? 'red': theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(false) }}>Start</Button>
         <Button style={styles.button} icon="microphone-off" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
-        <Button style={styles.button} icon="microphone" mode="contained" onPress={() => { startAudio(true) }}>Auto</Button>
+        <Button style={styles.button} textColor={(isMicOn & isAutoSpeak)? 'red': theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(true) }}>Auto</Button>
 
       </View>
       <ScrollView>
