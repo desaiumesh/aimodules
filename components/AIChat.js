@@ -2,6 +2,7 @@ import { StyleSheet, View, KeyboardAvoidingView } from 'react-native'
 import React, { useState } from 'react'
 import { Text, TextInput, IconButton, Avatar } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
+import uuid from 'react-native-uuid';
 
 const AIChat = ({ messages, senderText, SetSenderText, onPress }) => {
 
@@ -13,13 +14,13 @@ const AIChat = ({ messages, senderText, SetSenderText, onPress }) => {
                     messages?.map(({ role, content }) => {
 
                         if (role === "assistant") {
-                            return (<View style={styles.receiver}>
+                            return (<View style={styles.receiver} key={uuid.v4()}>
                                 <Avatar.Icon size={30} icon="robot" />
                                 <Text>{content}</Text>
                             </View>)
                         }
                         else if (role === "user") {
-                            return (<View style={styles.sender}>
+                            return (<View style={styles.sender} key={uuid.v4()}>
                                 <Avatar.Icon size={30} icon="account" />
                                 <Text>{content}</Text>
                             </View>)

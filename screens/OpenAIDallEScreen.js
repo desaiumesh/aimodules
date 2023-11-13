@@ -1,11 +1,12 @@
 import { View, StyleSheet, ImageBackground, Alert, Keyboard, Image, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useState } from 'react'
-import { Text, TextInput, IconButton } from 'react-native-paper';
+import { Text, TextInput, IconButton, useTheme } from 'react-native-paper';
 import useAsyncStorage from '../storage/useAsyncStorage';
 
 const OpenAIDallEScreen = () => {
 
     const [openAIResource] = useAsyncStorage("openAIResource", null);
+    const theme = useTheme();
   
     var endpoint = "endpoint";
     var key = "key";
@@ -53,11 +54,11 @@ const OpenAIDallEScreen = () => {
             imageStyle={styles.imageStyle}
             resizeMode="cover">
             <View style={styles.container}>
-                <TextInput placeholder='Describe the image you want to create. For example, "watercolor painting of the Seattle skyline"' style={styles.textInput}
+                <TextInput placeholder='Describe the image you want to create. For example, "watercolor painting of the Seattle skyline"'
                     multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
                 <View style={styles.ImageContainer}>
                     <Image source={{ uri: imageURL }} style={styles.cameraImage} />
-                    {isLoading && <ActivityIndicator size={50}/>}
+                    {isLoading && <ActivityIndicator size={50} color={theme.colors.onPrimary}/>}
                 </View>
                 <View style={styles.innerContainer}>
                     <IconButton icon="robot" size={30} mode="contained" onPress={() => { createImage() }}></IconButton>

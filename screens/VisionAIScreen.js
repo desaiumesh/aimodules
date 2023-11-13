@@ -1,6 +1,6 @@
 import { Image, ImageBackground, StyleSheet, View, PermissionsAndroid, ScrollView, Image as RNimage } from 'react-native'
 import React, { useRef, useState } from 'react'
-import { Text, Button, Checkbox, IconButton } from 'react-native-paper'
+import { Text, Button, Checkbox, IconButton,useTheme } from 'react-native-paper'
 import  ImageAnalysisApi from '../api/ImageAnalysisApi';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import Canvas, { Image as CanvasImage } from 'react-native-canvas';
@@ -20,6 +20,7 @@ const VisionAIScreen = () => {
     const [checked, setChecked] = React.useState(false);
     const [objectConfidence, setObjectConfidence] = React.useState(0.50);
     const [personConfidence, setPersonConfidence] = React.useState(0.70);
+    const theme = useTheme();
 
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -269,6 +270,9 @@ const VisionAIScreen = () => {
                         minimumValue={0}
                         maximumValue={1}
                         value={objectConfidence}
+                        minimumTrackTintColor ={theme.colors.onPrimary}
+                        maximumTrackTintColor ={theme.colors.onPrimary}
+                        thumbTintColor={theme.colors.primary}
                         onValueChange={(value) => { setObjectConfidence(value) }}
                     />
                 </View>
@@ -282,6 +286,9 @@ const VisionAIScreen = () => {
                         minimumValue={0}
                         maximumValue={1}
                         value={personConfidence}
+                        minimumTrackTintColor ={theme.colors.onPrimary}
+                        maximumTrackTintColor ={theme.colors.onPrimary}
+                        thumbTintColor={theme.colors.primary}
                         onValueChange={(value) => { setPersonConfidence(value) }}
                     />
                 </View>

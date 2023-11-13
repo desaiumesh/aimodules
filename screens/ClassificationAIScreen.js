@@ -7,6 +7,7 @@ import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useAsyncStorage from '../storage/useAsyncStorage';
+import uuid from 'react-native-uuid';
 
 const ClassificationAIScreen = () => {
 
@@ -190,7 +191,7 @@ const ClassificationAIScreen = () => {
           {
             predictions?.map((item) => {
               return (
-                <View style={styles.predictionContainer} key={item.key}>
+                <View style={styles.predictionContainer} key={uuid.v4()}>
                   <Text style={styles.predictionText}>{item.tagName} :</Text>
                   <Text style={styles.predictionText}>{(item.probability * 100).toFixed(4)} %</Text>
                 </View>

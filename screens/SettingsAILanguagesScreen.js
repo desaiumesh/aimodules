@@ -1,4 +1,4 @@
-import { StyleSheet, View, ImageBackground, ScrollView } from 'react-native'
+import { StyleSheet, View, ImageBackground, ScrollView, FlatList, SwipeView, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react';
 import useAsyncStorage from '../storage/useAsyncStorage';
 import { Text, TextInput, IconButton, Divider, Switch } from 'react-native-paper';
@@ -33,7 +33,7 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
         }
 
         const namefound = speakingLanguageData?.some((item) => item.LanguageName.toLowerCase() === languageName.toLowerCase());
-        if(namefound){
+        if (namefound) {
             alert("Language name already exists");
             return;
         }
@@ -43,7 +43,7 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
         }
 
         const voiceNamefound = speakingLanguageData?.some((item) => item.LanguageGenderName.toLowerCase() === voiceName.toLowerCase());
-        if(voiceNamefound){
+        if (voiceNamefound) {
             alert("Voice name already exists");
             return;
         }
@@ -51,9 +51,9 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
         if (languageCode === "") {
             alert("Please enter language code"); return;
         }
-        
+
         const languageCodefound = speakingLanguageData?.some((item) => item.LanguageCode.toLowerCase() === languageCode.toLowerCase());
-        if(languageCodefound){
+        if (languageCodefound) {
             alert("Language code already exists");
             return;
         }
@@ -61,9 +61,9 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
         if (localeBCP47 === "") {
             alert("Please enter locale BCP-47"); return;
         }
-        
+
         const localeBCP47found = speakingLanguageData?.some((item) => item.LocaleBCP47.toLowerCase() === localeBCP47.toLowerCase());
-        if(localeBCP47found){
+        if (localeBCP47found) {
             alert("Locale BCP-47 already exists");
             return;
         }
@@ -72,29 +72,52 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
         if (voice === "") {
             alert("Please enter voice name"); return;
         }
-        
+
         const voicefound = speakingLanguageData?.some((item) => item.Voice.toLowerCase() === voice.toLowerCase());
-        if(voicefound){
+        if (voicefound) {
             alert("Voice already exists");
             return;
         }
 
         try {
 
-            var newValue = { key: speakingLanguageData.length + 1, value: '', 
-            LanguageName: languageName, LanguageGenderName: voiceName, 
-            LanguageCode: languageCode, LocaleBCP47: localeBCP47, Voice: voice };
+            var keyvalue = 1;
+
+            speakingLanguageData.forEach(element => {
+                keyvalue = Math.max(keyvalue, Number(element.key))
+            });
+
+            let key = keyvalue + 1;
+            console.log("key3", key);
+            var newValue = {
+                key: key, value: '',
+                LanguageName: languageName, LanguageGenderName: voiceName,
+                LanguageCode: languageCode, LocaleBCP47: localeBCP47, Voice: voice
+            };
 
             const data = JSON.stringify(speakingLanguages);
             const result = JSON.parse(data);
             result.push(newValue);
 
             setSpeakingLanguages(result);
-            
+
         } catch (error) {
             console.log("error", error);
         }
-      
+
+    };
+
+    const deleteItemById = (key, name) => {
+
+        Alert.alert(
+            '',
+            `Are you sure you want to delete ${name} language?`,
+            [
+                { text: 'Cancel', onPress: () => console.log('Cancel Pressed'), style: 'cancel' },
+                { text: 'OK', onPress: () => setSpeakingLanguages(speakingLanguages?.filter(item => item.key !== key)) },
+            ],
+            { cancelable: false }
+        )
     };
 
     return (
@@ -134,6 +157,20 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
                     </View>
                     <Divider style={styles.divider} />
                 </ScrollView>
+                <Text style={styles.text}>Languages</Text>
+                <Divider style={styles.divider} />
+                <FlatList height={200}
+                    data={speakingLanguages}
+                    renderItem={({ item }) => (
+                       <View>
+                         <View style={styles.flatlistContainer}>
+                            <Text style={styles.biometricsText}> {item.LanguageGenderName}</Text>
+                            <IconButton icon="delete" mode="contained" onPress={() => { deleteItemById(item.key, item.LanguageGenderName) }}></IconButton>
+                        </View>
+                        <Divider style={styles.divider} />
+                        </View>
+                    )}
+                />
             </View>
         </ImageBackground>
     )
@@ -151,6 +188,13 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%',
         padding: 10,
+    },
+    flatlistContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        width: '100%',
+        paddingRight: 10,
+        paddingLeft: 10,
     },
     LanguageContainer: {
         paddingLeft: 10,
@@ -250,8 +294,8 @@ const styles = StyleSheet.create({
     },
     textInput: {
         borderWidth: 2,
-        marginTop: 10,
-        marginBottom: 10,
+        marginTop: 2,
+        marginBottom: 2,
         fontSize: 12,
         borderRadius: 10
     },
