@@ -11,15 +11,17 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
 LogBox.ignoreLogs(['new NativeEventEmitter']);
-import { Text, TextInput, Button, useTheme  } from 'react-native-paper';
+import { Text, TextInput, Button, useTheme } from 'react-native-paper';
 import Video from 'react-native-video';
 import { useIsFocused } from "@react-navigation/native";
 import useAsyncStorage from '../storage/useAsyncStorage';
+import * as constants from '../constants/constants';
 
 const SpeechAIScreen = () => {
 
   const [speechResource] = useAsyncStorage("speechResource", null);
-
+  const [allLanguageData] = useAsyncStorage('speakingLanguages', constants.languages);
+ 
   const isFocused = useIsFocused();
 
   const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
@@ -54,29 +56,6 @@ const SpeechAIScreen = () => {
 
   const [autoLanguageVoice, setAutoLanguageVoice] = useState("");
 
-  const allLanguageData = [
-    { key: '1', value: '', LanguageName: "English", LanguageGenderName: "English (United States) Female", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-JennyNeural" },
-    { key: '2', value: '', LanguageName: "English", LanguageGenderName: "English (United States) Male", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-GuyNeural" },
-    { key: '3', value: '', LanguageName: "Marathi", LanguageGenderName: "Marathi (India) Female", LanguageCode: "mr", LocaleBCP47: "mr-IN", Voice: "mr-IN-AarohiNeural" },
-    { key: '4', value: '', LanguageName: "Marathi", LanguageGenderName: "Marathi (India) Male", LanguageCode: "mr", LocaleBCP47: "mr-IN", Voice: "mr-IN-ManoharNeural" },
-    { key: '5', value: '', LanguageName: "Kannada", LanguageGenderName: "Kannada (India) Female", LanguageCode: "kn", LocaleBCP47: "kn-IN", Voice: "kn-IN-SapnaNeural" },
-    { key: '6', value: '', LanguageName: "Kannada", LanguageGenderName: "Kannada (India) Male", LanguageCode: "kn", LocaleBCP47: "kn-IN", Voice: "kn-IN-GaganNeural" },
-    { key: '7', value: '', LanguageName: "Gujarati", LanguageGenderName: "Gujarati (India) Female", LanguageCode: "gu", LocaleBCP47: "gu-IN", Voice: "gu-IN-DhwaniNeural" },
-    { key: '8', value: '', LanguageName: "Gujarati", LanguageGenderName: "Gujarati (India) Male", LanguageCode: "gu", LocaleBCP47: "gu-IN", Voice: "gu-IN-NiranjanNeural" },
-    { key: '9', value: '', LanguageName: "Telugu", LanguageGenderName: "Telugu (India) Female", LanguageCode: "te", LocaleBCP47: "te-IN", Voice: "te-IN-ShrutiNeural" },
-    { key: '10', value: '', LanguageName: "Telugu", LanguageGenderName: "Telugu (India) Male", LanguageCode: "te", LocaleBCP47: "te-IN", Voice: "te-IN-MohanNeural" },
-    { key: '11', value: '', LanguageName: "Hindi", LanguageGenderName: "Hindi (India) Female", LanguageCode: "hi", LocaleBCP47: "hi-IN", Voice: "hi-IN-SwaraNeural " },
-    { key: '12', value: '', LanguageName: "Hindi", LanguageGenderName: "Hindi (India) Male", LanguageCode: "hi", LocaleBCP47: "hi-IN", Voice: "hi-IN-MadhurNeural" },
-
-    { key: '13', value: '', LanguageName: "Urdu", LanguageGenderName: "Urdu (India) Female", LanguageCode: "ur", LocaleBCP47: "ur-IN", Voice: "ur-IN-GulNeural" },
-    { key: '14', value: '', LanguageName: "Urdu", LanguageGenderName: "Urdu (India) Male", LanguageCode: "ur", LocaleBCP47: "ur-IN", Voice: "ur-IN-SalmanNeural" },
-    { key: '15', value: '', LanguageName: "Spanish", LanguageGenderName: "Spanish (Argentina) Female", LanguageCode: "es", LocaleBCP47: "es-AR", Voice: "es-AR-ElenaNeural" },
-    { key: '16', value: '', LanguageName: "Spanish", LanguageGenderName: "Spanish (Argentina) Male", LanguageCode: "es", LocaleBCP47: "es-AR", Voice: "es-AR-TomasNeural" },
-    { key: '17', value: '', LanguageName: "French", LanguageGenderName: "French Female", LanguageCode: "fr", LocaleBCP47: "fr-FR", Voice: "fr-FR-DeniseNeural" },
-    { key: '18', value: '', LanguageName: "French", LanguageGenderName: "French Male", LanguageCode: "fr", LocaleBCP47: "fr-FR", Voice: "fr-FR-HenriNeural" },
-
-  ]
-
   useEffect(() => {
 
     if (isFocused) {
@@ -86,8 +65,8 @@ const SpeechAIScreen = () => {
       setMuteAutoFile(true);
       setPauseAutoFile(false);
     }
-
-    allLanguageData.forEach(element => {
+    
+    allLanguageData?.forEach(element => {
 
       const found = sourceLanguages.some(el => el.value === element.LanguageGenderName)
 
@@ -99,7 +78,7 @@ const SpeechAIScreen = () => {
       }
     });
 
-    allLanguageData.forEach(element => {
+    allLanguageData?.forEach(element => {
 
       const found = targetLanguages.some(el => el.value === element.LanguageGenderName)
 
@@ -112,7 +91,7 @@ const SpeechAIScreen = () => {
 
     });
 
-  }, [isFocused]);
+  }, [isFocused, allLanguageData]);
 
   //prompt for permissions if not granted
   const checkPermissions = async () => {
@@ -154,59 +133,57 @@ const SpeechAIScreen = () => {
     const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
     const sourcelanguage = sourceLanguageObj.LanguageCode;
     const sourceLanguageLocale47 = sourceLanguageObj.LocaleBCP47;
-    const sourceLanguageGenderName = sourceLanguageObj.LanguageGenderName;
 
     const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
     const targetLanguage = targetLanguageObj.LanguageCode;
     const targetLanguageLocaleBCP47 = targetLanguageObj.LocaleBCP47;
-    const targetLanguageGenderName = targetLanguageObj.LanguageGenderName;
 
-      //creates a push stream system which allows new data to be pushed to the recognizer
-      const pushStream = AudioInputStream.createPushStream();
-      const options = { sampleRate, channels, bitsPerChannel, audioSource: 6, };
+    //creates a push stream system which allows new data to be pushed to the recognizer
+    const pushStream = AudioInputStream.createPushStream();
+    const options = { sampleRate, channels, bitsPerChannel, audioSource: 6, };
 
-      AudioRecord.init(options);
-      //everytime data is recieved from the mic, push it to the pushStream
-      AudioRecord.on('data', (data) => {
-        const pcmData = Buffer.from(data, 'base64');
-        pushStream.write(pcmData);
-      });
+    AudioRecord.init(options);
+    //everytime data is recieved from the mic, push it to the pushStream
+    AudioRecord.on('data', (data) => {
+      const pcmData = Buffer.from(data, 'base64');
+      pushStream.write(pcmData);
+    });
 
-      AudioRecord.start();
+    AudioRecord.start();
 
-      if (isAuto) {
-        // Please replace the service region with your region (e.g. "westus").
-        var v2EndpointUrl = new URL(`wss://${region}.stt.speech.microsoft.com/speech/universal/v2`);
+    if (isAuto) {
+      // Please replace the service region with your region (e.g. "westus").
+      var v2EndpointUrl = new URL(`wss://${region}.stt.speech.microsoft.com/speech/universal/v2`);
 
-        const speechTranslationConfig = SpeechTranslationConfig.fromEndpoint(v2EndpointUrl, key);
-        speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
+      const speechTranslationConfig = SpeechTranslationConfig.fromEndpoint(v2EndpointUrl, key);
+      speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
 
-        speechTranslationConfig.addTargetLanguage(sourcelanguage);
-        speechTranslationConfig.addTargetLanguage(targetLanguage);
+      speechTranslationConfig.addTargetLanguage(sourcelanguage);
+      speechTranslationConfig.addTargetLanguage(targetLanguage);
 
-        const audioConfig = AudioConfig.fromStreamInput(pushStream);
-        var autoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig.fromLanguages([sourceLanguageLocale47, targetLanguageLocaleBCP47]);
-        autoDetectSourceLanguageConfig.mode = LanguageIdMode.Continuous;
-        recognizer = new TranslationRecognizer.FromConfig(speechTranslationConfig, autoDetectSourceLanguageConfig, audioConfig);
+      const audioConfig = AudioConfig.fromStreamInput(pushStream);
+      var autoDetectSourceLanguageConfig = AutoDetectSourceLanguageConfig.fromLanguages([sourceLanguageLocale47, targetLanguageLocaleBCP47]);
+      autoDetectSourceLanguageConfig.mode = LanguageIdMode.Continuous;
+      recognizer = new TranslationRecognizer.FromConfig(speechTranslationConfig, autoDetectSourceLanguageConfig, audioConfig);
 
-      }
-      else {
-        const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, region);
-        speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
-        speechTranslationConfig.addTargetLanguage(targetLanguage);
+    }
+    else {
+      const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(key, region);
+      speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
+      speechTranslationConfig.addTargetLanguage(targetLanguage);
 
-        const audioConfig = AudioConfig.fromStreamInput(pushStream);
-        recognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
-      }
+      const audioConfig = AudioConfig.fromStreamInput(pushStream);
+      recognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
+    }
 
   };
 
   //sets up speechrecognizer and audio stream
   const startAudio = async (isAuto) => {
-  
+
     setPauseFile(true);
     setPauseAutoFile(true);
-   
+
     if (!selectedSource) {
       alert("Please select source language");
       return;
@@ -234,7 +211,7 @@ const SpeechAIScreen = () => {
 
       const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
       const sourceLanguageGenderName = sourceLanguageObj.LanguageGenderName;
-  
+
       const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
       const targetLanguageGenderName = targetLanguageObj.LanguageGenderName;
 
@@ -258,11 +235,11 @@ const SpeechAIScreen = () => {
 
               if (translation?.DisplayText !== primaryLanguageText) {
                 targetLText = targetLText + `${translation?.DisplayText}.`;
-              
+
                 const foundLanguages = allLanguageData?.find(el => el.LanguageCode === translation?.Language
-                   && (el.LanguageGenderName === sourceLanguageGenderName ||
-                     el.LanguageGenderName === targetLanguageGenderName));
-                
+                  && (el.LanguageGenderName === sourceLanguageGenderName ||
+                    el.LanguageGenderName === targetLanguageGenderName));
+
                 setAutoLanguageVoice(foundLanguages.Voice);
               }
             }
@@ -310,7 +287,7 @@ const SpeechAIScreen = () => {
     const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
     let targetVoice = targetLanguageObj.Voice;
 
-    if(isAutoSpeak){
+    if (isAutoSpeak) {
       fileName = '/aiAutoSpeak.mp3';
       targetVoice = autoLanguageVoice;
     }
@@ -425,9 +402,9 @@ const SpeechAIScreen = () => {
 
       <View style={styles.buttonConatiner}>
 
-        <Button style={styles.button} textColor={(isMicOn & !isAutoSpeak)? 'red': theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(false) }}>Start</Button>
+        <Button style={styles.button} textColor={(isMicOn & !isAutoSpeak) ? 'red' : theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(false) }}>Start</Button>
         <Button style={styles.button} icon="microphone-off" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
-        <Button style={styles.button} textColor={(isMicOn & isAutoSpeak)? 'red': theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(true) }}>Auto</Button>
+        <Button style={styles.button} textColor={(isMicOn & isAutoSpeak) ? 'red' : theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(true) }}>Auto</Button>
 
       </View>
       <ScrollView>

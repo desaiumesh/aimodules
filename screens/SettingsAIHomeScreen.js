@@ -52,6 +52,11 @@ const SettingsAIHomeScreen = ({navigation}) => {
           <IconButton icon="arrow-right-bold" mode="contained" onPress={() => navigation.navigate('SettingsResources')}></IconButton>
         </View>
         <Divider style={styles.divider} />
+        <View style={styles.innerContainerWithButton}>
+          <Text style={styles.settingsText}>Languages</Text>
+          <IconButton icon="arrow-right-bold" mode="contained" onPress={() => navigation.navigate('SettingsLanguages')}></IconButton>
+        </View>
+        <Divider style={styles.divider} />
       </View>
     </ImageBackground>
 

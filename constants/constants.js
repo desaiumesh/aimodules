@@ -87,4 +87,28 @@ export const darkColors = {
       "backdrop": "rgba(41, 50, 48, 0.4)"
     }
   };
+
+  export var languages = [
+    { key: '1', value: '', LanguageName: "English", LanguageGenderName: "English (United States) Female", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-JennyNeural" },
+    { key: '2', value: '', LanguageName: "English", LanguageGenderName: "English (United States) Male", LanguageCode: "en", LocaleBCP47: "en-US", Voice: "en-US-GuyNeural" },
+    { key: '3', value: '', LanguageName: "Marathi", LanguageGenderName: "Marathi (India) Female", LanguageCode: "mr", LocaleBCP47: "mr-IN", Voice: "mr-IN-AarohiNeural" },
+    { key: '4', value: '', LanguageName: "Marathi", LanguageGenderName: "Marathi (India) Male", LanguageCode: "mr", LocaleBCP47: "mr-IN", Voice: "mr-IN-ManoharNeural" },
+    { key: '5', value: '', LanguageName: "Kannada", LanguageGenderName: "Kannada (India) Female", LanguageCode: "kn", LocaleBCP47: "kn-IN", Voice: "kn-IN-SapnaNeural" },
+    { key: '6', value: '', LanguageName: "Kannada", LanguageGenderName: "Kannada (India) Male", LanguageCode: "kn", LocaleBCP47: "kn-IN", Voice: "kn-IN-GaganNeural" },
+    { key: '7', value: '', LanguageName: "Gujarati", LanguageGenderName: "Gujarati (India) Female", LanguageCode: "gu", LocaleBCP47: "gu-IN", Voice: "gu-IN-DhwaniNeural" },
+    { key: '8', value: '', LanguageName: "Gujarati", LanguageGenderName: "Gujarati (India) Male", LanguageCode: "gu", LocaleBCP47: "gu-IN", Voice: "gu-IN-NiranjanNeural" },
+    { key: '9', value: '', LanguageName: "Telugu", LanguageGenderName: "Telugu (India) Female", LanguageCode: "te", LocaleBCP47: "te-IN", Voice: "te-IN-ShrutiNeural" },
+    { key: '10', value: '', LanguageName: "Telugu", LanguageGenderName: "Telugu (India) Male", LanguageCode: "te", LocaleBCP47: "te-IN", Voice: "te-IN-MohanNeural" },
+    { key: '11', value: '', LanguageName: "Hindi", LanguageGenderName: "Hindi (India) Female", LanguageCode: "hi", LocaleBCP47: "hi-IN", Voice: "hi-IN-SwaraNeural " },
+    { key: '12', value: '', LanguageName: "Hindi", LanguageGenderName: "Hindi (India) Male", LanguageCode: "hi", LocaleBCP47: "hi-IN", Voice: "hi-IN-MadhurNeural" },
+
+    { key: '13', value: '', LanguageName: "Urdu", LanguageGenderName: "Urdu (India) Female", LanguageCode: "ur", LocaleBCP47: "ur-IN", Voice: "ur-IN-GulNeural" },
+    { key: '14', value: '', LanguageName: "Urdu", LanguageGenderName: "Urdu (India) Male", LanguageCode: "ur", LocaleBCP47: "ur-IN", Voice: "ur-IN-SalmanNeural" },
+    { key: '15', value: '', LanguageName: "Spanish", LanguageGenderName: "Spanish (Argentina) Female", LanguageCode: "es", LocaleBCP47: "es-AR", Voice: "es-AR-ElenaNeural" },
+    { key: '16', value: '', LanguageName: "Spanish", LanguageGenderName: "Spanish (Argentina) Male", LanguageCode: "es", LocaleBCP47: "es-AR", Voice: "es-AR-TomasNeural" },
+    { key: '17', value: '', LanguageName: "French", LanguageGenderName: "French Female", LanguageCode: "fr", LocaleBCP47: "fr-FR", Voice: "fr-FR-DeniseNeural" },
+    { key: '18', value: '', LanguageName: "French", LanguageGenderName: "French Male", LanguageCode: "fr", LocaleBCP47: "fr-FR", Voice: "fr-FR-HenriNeural" },
+
+  ];
+
   

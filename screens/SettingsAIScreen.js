@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import SettingsAIResourcesScreen from './SettingsAIResourcesScreen';
 import SettingsAIHomeScreen from './SettingsAIHomeScreen';
 import SettingsAIThemeColorsScreen from './SettingsAIThemeColorsScreen';
+import SettingsAILanguagesScreen from './SettingsAILanguagesScreen';
 
 const SettingsAIScreen = () => {
 
@@ -17,6 +18,7 @@ const SettingsAIScreen = () => {
       <Stack.Screen name="SettingsHome" component={SettingsAIHomeScreen} />
       <Stack.Screen name="SettingsResources" component={SettingsAIResourcesScreen} />
       <Stack.Screen name="SettingsThemeColor" component={SettingsAIThemeColorsScreen} />
+      <Stack.Screen name="SettingsLanguages" component={SettingsAILanguagesScreen} />
     </Stack.Navigator>
   )
 }
