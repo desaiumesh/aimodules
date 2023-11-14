@@ -7,8 +7,6 @@ import {
   TranslationRecognizer, SpeechSynthesizer, AudioOutputStream, CancellationDetails, AutoDetectSourceLanguageConfig, LanguageIdMode
 } from 'microsoft-cognitiveservices-speech-sdk';
 import AudioRecord from 'react-native-live-audio-stream';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { SelectList } from 'react-native-dropdown-select-list'
 import { appStyles } from '../styles/appStyle';
 LogBox.ignoreLogs(['new NativeEventEmitter']);
 import { Text, TextInput, Button, useTheme } from 'react-native-paper';
@@ -22,14 +20,16 @@ const SpeechAIScreen = () => {
 
   const [speechResource] = useAsyncStorage("speechResource", null);
   const [allLanguageData] = useAsyncStorage('speakingLanguages', constants.languages);
-
   const isFocused = useIsFocused();
 
-  const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
+  let aiAudioFileName = 'aiAudio.mp3';
+  let aiAutoAudioFileName = 'aiAutoAudio.mp3';
+
+  const [storedFile, setStoredFile] = useState(`/data/user/0/com.aimodules/files/${aiAudioFileName}`);
   const [pauseFile, setPauseFile] = useState(true);
   const [muteFile, setMuteFile] = useState(true);
 
-  const [storedAutoFile, setStoredAutoFile] = useState("/data/user/0/com.aimodules/files/aiAutoSpeak.mp3");
+  const [storedAutoFile, setStoredAutoFile] = useState(`/data/user/0/com.aimodules/files/${aiAutoAudioFileName.mp3}`);
   const [isAutoSpeak, setIsAutoSpeak] = useState(false);
   const [pauseAutoFile, setPauseAutoFile] = useState(true);
   const [muteAutoFile, setMuteAutoFile] = useState(true);
@@ -92,7 +92,47 @@ const SpeechAIScreen = () => {
 
     });
 
+
+    var RNFS = require('react-native-fs');
+    var aiAudioFilepath = RNFS.DocumentDirectoryPath + '/' + aiAudioFileName;
+    var aiAutoAudioFilepath = RNFS.DocumentDirectoryPath + '/' + aiAutoAudioFileName;
+
+    checkAudioFile(aiAudioFilepath, '');
+    checkAudioFile(aiAutoAudioFilepath, '');
+
   }, [isFocused, allLanguageData]);
+
+
+  const checkAudioFile = async (path, base64String) => {
+
+    var RNFS = require('react-native-fs');
+    RNFS.exists(path)
+      .then((exists) => {
+        if (!exists) {
+         createAudioFile(path, base64String)
+        } else {
+          console.log('File exist');
+        }
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
+
+  const createAudioFile = async (path, base64String) => {
+
+    console.log('createAudioFile');
+    console.log(path);
+    var RNFS = require('react-native-fs');
+
+    RNFS.writeFile(path, base64String, 'base64')
+      .then((success) => {
+        console.log('New FILE WRITTEN!', path);
+      })
+      .catch((err) => {
+        console.log(err.message);
+      });
+  }
 
   //prompt for permissions if not granted
   const checkPermissions = async () => {
@@ -283,13 +323,13 @@ const SpeechAIScreen = () => {
     }
 
     let text = targetLanguagesText;
-    let fileName = '/aiaudio6.mp3';
+    let fileName = `/${aiAudioFileName}`;
 
     const targetLanguageObj = allLanguageData.find(element => element.key === selectedTarget);
     let targetVoice = targetLanguageObj.Voice;
 
     if (isAutoSpeak) {
-      fileName = '/aiAutoSpeak.mp3';
+      fileName = `/${aiAutoAudioFileName}`;
       targetVoice = autoLanguageVoice;
     }
 
@@ -389,7 +429,7 @@ const SpeechAIScreen = () => {
         <Text style={styles.textSource} multiline={true}>{targetLanguagesText}</Text>
 
         <Video
-          source={{ uri: 'file:///data/user/0/com.aimodules/files/aiaudio6.mp3' }}
+          source={{ uri: `file:///data/user/0/com.aimodules/files/${aiAudioFileName}` }}
           shouldPlay={false}
           resizeMode="cover"
           style={{ width: 1, height: 1 }}
@@ -397,7 +437,7 @@ const SpeechAIScreen = () => {
           paused={pauseFile} />
 
         <Video
-          source={{ uri: 'file:///data/user/0/com.aimodules/files/aiAutoSpeak.mp3' }}
+          source={{ uri: `file:///data/user/0/com.aimodules/files/${aiAutoAudioFileName}` }}
           shouldPlay={true}
           resizeMode="cover"
           style={{ width: 1, height: 1 }}
