@@ -2,12 +2,15 @@ import { View, StyleSheet, TouchableOpacity, Keyboard, ActivityIndicator } from 
 import React, { useEffect, useState } from 'react'
 import { appStyles } from '../styles/appStyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { ImageBackground } from 'react-native';
+import { ImageBackground, ScrollView } from 'react-native';
 import Loading from '../components/Loading';
-import { Text, TextInput, Button } from 'react-native-paper';
+import { Text, TextInput, Button, Divider, IconButton } from 'react-native-paper';
 import TextAnalysisApi from '../api/TextAnalysisApi';
 import useAsyncStorage from '../storage/useAsyncStorage';
 import * as constants from '../constants/constants';
+import uuid from 'react-native-uuid';
+import DocumentPicker from 'react-native-document-picker';
+import RNFS from 'react-native-fs';
 
 const TextAIScreen = () => {
 
@@ -15,11 +18,33 @@ const TextAIScreen = () => {
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("");
   const [sentiment, setSentiment] = useState("");
+  const [sentenceSentiment, setSentenceSentiment] = useState([]);
   const [entities, setEntities] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const analyseText = () => {
+  const openDocument = async () => {
+
+    try {
+      const res = await DocumentPicker.pickSingle({
+        type: [DocumentPicker.types.plainText],
+      });
     
+      const fileContent = await RNFS.readFile(res.uri, 'utf8');
+
+      setText("");
+      setText(fileContent);
+
+    } catch (err) {
+      if (DocumentPicker.isCancel(err)) {
+        console.log('User cancelled document picker');
+      } else {
+        console.log(err);
+      }
+    }
+  };
+
+  const analyseText = () => {
+
     if (text == "") {
       alert("Please enter a Text");
       return;
@@ -49,7 +74,8 @@ const TextAIScreen = () => {
       TextAnalysisSentimentApi({ text })
         .then(resp => {
           if (resp.status == 200) {
-            setSentiment(resp.data.documents[0].sentiment);
+            setSentiment(resp?.data?.documents[0]?.sentiment);
+            setSentenceSentiment(resp?.data?.documents[0]?.sentences)
           }
           else {
             setSentiment("Error");
@@ -89,29 +115,47 @@ const TextAIScreen = () => {
     return (
       <ImageBackground source={require('../assets/background.jpg')}
         style={constants.aiStyles.imageBackgroundImage}
-        imageStyle={constants.aiStyles.imageBackgroundImageStyle} 
+        imageStyle={constants.aiStyles.imageBackgroundImageStyle}
         blurRadius={1}
         resizeMode="cover">
-
         <View style={styles.container}>
           <TextInput placeholder="Write a text here"
+            value={text}
             onChangeText={(text) => setText(text)}
-            style={styles.textInput} multiline={true} ></TextInput>
-          <Button icon="text" mode="contained" onPress={() => { analyseText() }}>ANALYSE</Button>
+            style={styles.textInput} multiline={true} numberOfLines={4} ></TextInput>
+          <View style={styles.innerContainer}>
+            <IconButton icon="file" mode="contained" onPress={() => { openDocument() }}></IconButton>
+            <IconButton icon="text" mode="contained" onPress={() => { analyseText() }}></IconButton>
+          </View>
+          <Divider style={styles.divider} />
           <View>
             <View style={styles.outputContainer}>
               <Text style={styles.languageText}>Language: </Text>
               <Text style={styles.languageText}>{language} </Text>
             </View>
-            <View style={styles.outputContainer}>
-              <Text style={styles.languageText}>Sentiment: </Text>
-              <Text style={styles.languageText}>{sentiment} </Text>
-            </View>
+            <Divider style={styles.divider} />
             <View style={styles.outputContainer}>
               <Text style={styles.languageText} >Entities: </Text>
               <Text style={styles.languageText} multiline={true}>{entities} </Text>
             </View>
+            <Divider style={styles.divider} />
+            <View style={styles.outputContainer}>
+              <Text style={styles.languageText}>Overall Sentiment: </Text>
+              <Text style={styles.languageText}>{sentiment} </Text>
+            </View>
           </View>
+          <ScrollView>
+            {
+              sentenceSentiment?.map(({ sentiment, text }) => {
+                return (<View style={styles.outputContainer} key={uuid.v4()}>
+                  <View>
+                    <Text style={styles.languageText}>{sentiment} : </Text>
+                    <Text style={styles.languageText} multiline={true}>{text}</Text>
+                  </View>
+                </View>)
+              })
+            }
+          </ScrollView>
         </View>
       </ImageBackground>
     )
@@ -136,8 +180,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: 'bold',
   },
+  divider: {
+    borderWidth: 1,
+    marginBottom: 5,
+    marginTop: 5
+  },
   innerContainer: {
-    padding: 15,
+    padding: 2,
     alignItems: 'center',
     flexDirection: 'row',
     justifyContent: 'center',
@@ -150,14 +199,13 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 2,
-    marginBottom: 20,
     fontSize: 16,
-    padding: 10,
+    padding: 2,
     borderRadius: 10
   },
   outputContainer: {
     flexDirection: 'row',
-    marginTop: 10
+    margin: 5
   }
 })
 
