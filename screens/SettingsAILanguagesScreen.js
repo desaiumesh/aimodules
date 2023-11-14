@@ -4,6 +4,7 @@ import useAsyncStorage from '../storage/useAsyncStorage';
 import { Text, TextInput, IconButton, Divider, Switch } from 'react-native-paper';
 import * as constants from '../constants/constants';
 
+
 const SettingsAILanguagesScreen = ({ navigation }) => {
 
     const [speakingLanguages, setSpeakingLanguages] = useAsyncStorage('speakingLanguages', constants?.languages);
@@ -121,9 +122,10 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
     };
 
     return (
-        <ImageBackground source={require('../assets/AI2.jpg')}
-            style={styles.image}
-            imageStyle={styles.imageStyle}
+        <ImageBackground source={require('../assets/background.jpg')}
+            style={constants.aiStyles.imageBackgroundImage}
+            imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+            blurRadius={1}
             resizeMode="cover">
             <View style={styles.container}>
                 <View style={styles.headerInnerContainer}>
@@ -162,12 +164,12 @@ const SettingsAILanguagesScreen = ({ navigation }) => {
                 <FlatList height={200}
                     data={speakingLanguages}
                     renderItem={({ item }) => (
-                       <View>
-                         <View style={styles.flatlistContainer}>
-                            <Text style={styles.biometricsText}> {item.LanguageGenderName}</Text>
-                            <IconButton icon="delete" mode="contained" onPress={() => { deleteItemById(item.key, item.LanguageGenderName) }}></IconButton>
-                        </View>
-                        <Divider style={styles.divider} />
+                        <View>
+                            <View style={styles.flatlistContainer}>
+                                <Text style={styles.biometricsText}> {item.LanguageGenderName}</Text>
+                                <IconButton icon="delete" mode="contained" onPress={() => { deleteItemById(item.key, item.LanguageGenderName) }}></IconButton>
+                            </View>
+                            <Divider style={styles.divider} />
                         </View>
                     )}
                 />

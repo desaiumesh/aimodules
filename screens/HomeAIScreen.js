@@ -8,8 +8,8 @@ const HomeAIScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.text} >Welcome to AI</Text>
-      <Text style={styles.subtext} >Access high-quality vision, speech, language, and text AI models</Text>
-      <Image source={require('../assets/AIImage.jpg')} style={styles.image} />
+      <Text style={styles.subtext} >Access high-quality text, speech, vision, and open AI models</Text>
+      <Image style={styles.image} resizeMode="cover" source={require('../assets/AIImage.jpg')} />
       <AiModels></AiModels>
     </View>
   )
@@ -18,25 +18,30 @@ const HomeAIScreen = () => {
 const styles = StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent:'center',
     flex: 1,
-    marginBottom :0
+    height: '100%',
   },
   image: {
+    height:'63%',
+    alignSelf:'center'
   },
   text: {
     fontWeight: 'bold',
     fontSize: 30,
-    paddingBottom: 2,
     textAlign: 'justify'
   },
   subtext: {
     fontWeight: 'bold',
     fontSize: 15,
-    padding: 10,
-    textAlign: 'center'
+    textAlign: 'center',
+    padding: 10
+  },
+  aiModulecontainer: {
+    flexGrow: 1,
+  },
+  footer: {
+    height: 100
   }
-
 })
 
 export default HomeAIScreen;

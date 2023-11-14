@@ -8,6 +8,8 @@ import { appStyles } from '../styles/appStyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import useAsyncStorage from '../storage/useAsyncStorage';
 import uuid from 'react-native-uuid';
+import * as constants from '../constants/constants';
+import AISelectList from '../components/AISelectList';
 
 const ClassificationAIScreen = () => {
 
@@ -161,27 +163,17 @@ const ClassificationAIScreen = () => {
   };
 
   return (
-    <ImageBackground source={require('../assets/speech.jpg')}
-      style={styles.image}
-      imageStyle={styles.imageStyle}
+    <ImageBackground source={require('../assets/background.jpg')}
+      style={constants.aiStyles.imageBackgroundImage}
+      imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+      blurRadius={1}
       resizeMode="cover">
       <View style={styles.container}>
         <View style={styles.ImageContainer}>
           <Image source={{ uri: 'data:image/jpeg;base64,' + base64Data }} style={styles.cameraImage} />
         </View>
-        <SelectList
-          setSelected={setSelectedIteration}
-          data={iterations}
-          arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-          searchicon={<Ionicons name="search" size={20} color={'white'} />}
-          closeicon={<Ionicons name="close" size={20} color={'white'} />}
-          search={true}
-          placeholder="Select Iteration"
-          searchPlaceholder='Search Iteration'
-          boxStyles={styles.boxStyles}
-          inputStyles={styles.inputStyles}
-          dropdownStyles={styles.dropdownStyles}
-        />
+        <AISelectList setSelected={setSelectedIteration} data={iterations}
+          placeholderText='Select Iteration' searchPlaceholderText='Search Iteration' />
         <View style={styles.innerContainer}>
           <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
           <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>

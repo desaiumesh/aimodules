@@ -3,11 +3,13 @@ import React, { useState } from 'react'
 import { Text, IconButton, TextInput, Modal, Portal, List } from 'react-native-paper';
 import { SelectList } from 'react-native-dropdown-select-list'
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import {launchImageLibrary} from 'react-native-image-picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import CustomVisionApi from '../api/CustomVisionApi';
 import { appStyles } from '../styles/appStyle';
 import Carousel from 'react-native-reanimated-carousel';
 import useAsyncStorage from '../storage/useAsyncStorage';
+import * as constants from '../constants/constants';
+import AISelectList from '../components/AISelectList';
 
 const ClassificationAITrainingScreen = () => {
 
@@ -286,12 +288,13 @@ const ClassificationAITrainingScreen = () => {
     };
 
     return (
-        <ImageBackground source={require('../assets/speech.jpg')}
-            style={styles.image}
-            imageStyle={styles.imageStyle}
+        <ImageBackground source={require('../assets/background.jpg')}
+            style={constants.aiStyles.imageBackgroundImage}
+            imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+            blurRadius={1}
             resizeMode="cover">
-           <ScrollView>
-           <List.Accordion title="1: Tag">
+            <ScrollView>
+                <List.Accordion title="1: Tag">
                     <Portal>
                         <Modal theme={{ colors: { backdrop: 'rgba(0, 0, 0, 0.6)' } }} visible={visible} onDismiss={hideModal} contentContainerStyle={styles.modelContainerStyle}>
                             <View>
@@ -306,19 +309,11 @@ const ClassificationAITrainingScreen = () => {
                     </Portal>
                     <View style={styles.innerContainer}>
                         <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupTags() }}>Add Tags</IconButton>
-                        <SelectList
-                            setSelected={setSelectedTag}
-                            data={tags}
-                            arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-                            searchicon={<Ionicons name="search" size={20} color={'white'} />}
-                            closeicon={<Ionicons name="close" size={20} color={'white'} />}
-                            search={true}
-                            placeholder="Select Image Tag"
-                            searchPlaceholder='Search Image Tag'
-                            boxStyles={styles.boxStyles}
-                            inputStyles={styles.inputStyles}
-                            dropdownStyles={styles.dropdownStyles}
-                        />
+                        <View style={styles.innerSelectContainer}>
+                            <AISelectList setSelected={setSelectedTag} data={tags}
+                                placeholderText="Select Image Tag"
+                                searchPlaceholderText='Search Image Tag' />
+                        </View>
                         <IconButton icon="plus" mode="contained" onPress={showModal}>Add Tags</IconButton>
                     </View>
                 </List.Accordion>
@@ -355,20 +350,10 @@ const ClassificationAITrainingScreen = () => {
                 <List.Accordion title="3: Iteration">
                     <View style={styles.innerContainer}>
                         <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
-                        <SelectList
-                            setSelected={setSelectedIteration}
-                            data={iterations}
-                            arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-                            searchicon={<Ionicons name="search" size={20} color={'white'} />}
-                            closeicon={<Ionicons name="close" size={20} color={'white'} />}
-                            search={true}
-                            placeholder="Select Iteration"
-                            searchPlaceholder='Search Iteration'
-                            boxStyles={styles.boxStyles}
-                            inputStyles={styles.inputStyles}
-                            dropdownStyles={styles.dropdownStyles}
-
-                        />
+                        <View style={styles.innerSelectContainer}>
+                            <AISelectList setSelected={setSelectedIteration} data={iterations}
+                                placeholderText="Select Iteration" searchPlaceholderText='Search Iteration' />
+                        </View>
                         <IconButton icon="progress-check" mode="contained" onPress={() => { getIterationPerformance() }}>Train</IconButton>
                     </View>
                     <Portal>
@@ -389,7 +374,7 @@ const ClassificationAITrainingScreen = () => {
                         <IconButton icon="web" mode="contained" onPress={() => { publish() }}>Publish</IconButton>
                     </View>
                 </List.Accordion>
-           </ScrollView>
+            </ScrollView>
         </ImageBackground>
     )
 }
@@ -406,6 +391,9 @@ const styles = StyleSheet.create({
         padding: 10,
         marginRight: 20,
         marginLeft: 20,
+    },
+    innerSelectContainer: {
+        flex: 1
     },
     textInput: {
         flex: 1,

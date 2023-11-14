@@ -49,9 +49,10 @@ const SettingsAIThemeColorsScreen = ({ navigation }) => {
     };
 
     return (
-        <ImageBackground source={require('../assets/AI2.jpg')}
-            style={styles.image}
-            imageStyle={styles.imageStyle}
+        <ImageBackground source={require('../assets/background.jpg')}
+            style={constants.aiStyles.imageBackgroundImage}
+            imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+            blurRadius={1}
             resizeMode="cover">
             <View style={styles.container}>
                 <View style={styles.headerInnerContainer}>

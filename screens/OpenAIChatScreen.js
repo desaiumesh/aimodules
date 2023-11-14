@@ -4,18 +4,18 @@ import { Text, Button, TextInput, IconButton, Avatar, Divider } from 'react-nati
 import { ScrollView } from 'react-native-gesture-handler';
 import AIChat from '../components/AIChat';
 import useAsyncStorage from '../storage/useAsyncStorage';
-
+import * as constants from '../constants/constants';
 
 const OpenAIChatScreen = () => {
 
     const [openAIResource] = useAsyncStorage("openAIResource", null);
-  
+
     var endpoint = "endpoint";
     var key = "key";
 
     if (openAIResource?.key) {
         key = openAIResource?.key;
-     }
+    }
 
     if (openAIResource?.endpoint) {
         endpoint = openAIResource?.endpoint;
@@ -62,9 +62,10 @@ const OpenAIChatScreen = () => {
     }
 
     return (
-        <ImageBackground source={require('../assets/AI2.jpg')}
-            style={styles.image}
-            imageStyle={styles.imageStyle}
+        <ImageBackground source={require('../assets/background.jpg')}
+            style={constants.aiStyles.imageBackgroundImage}
+            imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+            blurRadius={1}
             resizeMode="cover">
             <View style={styles.container}>
                 <TextInput placeholder='You are an AI assistant that helps people find information.' style={styles.textInput}

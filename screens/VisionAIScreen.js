@@ -1,11 +1,12 @@
 import { Image, ImageBackground, StyleSheet, View, PermissionsAndroid, ScrollView, Image as RNimage } from 'react-native'
 import React, { useRef, useState } from 'react'
-import { Text, Button, Checkbox, IconButton,useTheme } from 'react-native-paper'
-import  ImageAnalysisApi from '../api/ImageAnalysisApi';
+import { Text, Button, Checkbox, IconButton, useTheme } from 'react-native-paper'
+import ImageAnalysisApi from '../api/ImageAnalysisApi';
 import { launchCamera, launchImageLibrary, ImageLibraryOptions, CameraOptions } from 'react-native-image-picker';
 import Canvas, { Image as CanvasImage } from 'react-native-canvas';
 import Slider from '@react-native-community/slider';
 import useAsyncStorage from '../storage/useAsyncStorage';
+import * as constants from '../constants/constants';
 
 const VisionAIScreen = () => {
 
@@ -248,9 +249,10 @@ const VisionAIScreen = () => {
 
 
     return (
-        <ImageBackground source={require('../assets/vision.jpg')}
-            style={styles.image}
-            imageStyle={styles.imageStyle}
+        <ImageBackground source={require('../assets/background.jpg')}
+            style={constants.aiStyles.imageBackgroundImage}
+            imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+            blurRadius={1}
             resizeMode="cover">
 
             <View style={styles.container}>
@@ -270,8 +272,8 @@ const VisionAIScreen = () => {
                         minimumValue={0}
                         maximumValue={1}
                         value={objectConfidence}
-                        minimumTrackTintColor ={theme.colors.onPrimary}
-                        maximumTrackTintColor ={theme.colors.onPrimary}
+                        minimumTrackTintColor={theme.colors.onPrimary}
+                        maximumTrackTintColor={theme.colors.onPrimary}
                         thumbTintColor={theme.colors.primary}
                         onValueChange={(value) => { setObjectConfidence(value) }}
                     />
@@ -286,8 +288,8 @@ const VisionAIScreen = () => {
                         minimumValue={0}
                         maximumValue={1}
                         value={personConfidence}
-                        minimumTrackTintColor ={theme.colors.onPrimary}
-                        maximumTrackTintColor ={theme.colors.onPrimary}
+                        minimumTrackTintColor={theme.colors.onPrimary}
+                        maximumTrackTintColor={theme.colors.onPrimary}
                         thumbTintColor={theme.colors.primary}
                         onValueChange={(value) => { setPersonConfidence(value) }}
                     />

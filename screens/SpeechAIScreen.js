@@ -16,12 +16,13 @@ import Video from 'react-native-video';
 import { useIsFocused } from "@react-navigation/native";
 import useAsyncStorage from '../storage/useAsyncStorage';
 import * as constants from '../constants/constants';
+import AISelectList from '../components/AISelectList';
 
 const SpeechAIScreen = () => {
 
   const [speechResource] = useAsyncStorage("speechResource", null);
   const [allLanguageData] = useAsyncStorage('speakingLanguages', constants.languages);
- 
+
   const isFocused = useIsFocused();
 
   const [storedFile, setStoredFile] = useState("/data/user/0/com.aimodules/files/aiaudio6.mp3");
@@ -65,7 +66,7 @@ const SpeechAIScreen = () => {
       setMuteAutoFile(true);
       setPauseAutoFile(false);
     }
-    
+
     allLanguageData?.forEach(element => {
 
       const found = sourceLanguages.some(el => el.value === element.LanguageGenderName)
@@ -365,47 +366,23 @@ const SpeechAIScreen = () => {
       })
   };
 
-  return (<ImageBackground source={require('../assets/speech.jpg')}
-    style={styles.image}
-    imageStyle={styles.imageStyle}
+  return (<ImageBackground source={require('../assets/background.jpg')}
+    style={constants.aiStyles.imageBackgroundImage}
+    imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+    blurRadius={1}
     resizeMode="cover">
 
     <View style={styles.container}>
-      <SelectList
-        setSelected={setSelectedSource}
-        data={sourceLanguages}
-        arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-        searchicon={<Ionicons name="search" size={20} color={'white'} />}
-        closeicon={<Ionicons name="close" size={20} color={'white'} />}
-        search={true}
-        placeholder="Select Source Language"
-        searchPlaceholder='Search Source Language'
-        boxStyles={styles.boxStyles}
-        inputStyles={styles.inputStyles}
-        dropdownStyles={styles.dropdownStyles}
+      <AISelectList data={sourceLanguages} setSelected={setSelectedSource}
+        placeholderText='Select Source Language' searchPlaceholderText='Search Source Language' />
 
-      />
-
-      <SelectList
-        setSelected={setTargetSelected}
-        data={targetLanguages}
-        arrowicon={<Ionicons name="chevron-down" size={20} color={'white'} />}
-        searchicon={<Ionicons name="search" size={20} color={'white'} />}
-        closeicon={<Ionicons name="close" size={20} color={'white'} />}
-        search={true}
-        placeholder="Select Target Language"
-        searchPlaceholder='Search Target Language'
-        boxStyles={styles.boxStyles}
-        inputStyles={styles.inputStyles}
-        dropdownStyles={styles.dropdownStyles}
-      />
+      <AISelectList data={targetLanguages} setSelected={setTargetSelected}
+        placeholderText='Select Target Language' searchPlaceholderText='Search Target Language' />
 
       <View style={styles.buttonConatiner}>
-
         <Button style={styles.button} textColor={(isMicOn & !isAutoSpeak) ? 'red' : theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(false) }}>Start</Button>
         <Button style={styles.button} icon="microphone-off" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
         <Button style={styles.button} textColor={(isMicOn & isAutoSpeak) ? 'red' : theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(true) }}>Auto</Button>
-
       </View>
       <ScrollView>
         <Text style={styles.textSource} multiline={true}>{sourceLanguagesText}</Text>

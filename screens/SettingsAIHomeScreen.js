@@ -3,15 +3,16 @@ import React, { useEffect, useState } from 'react';
 import useAsyncStorage from '../storage/useAsyncStorage';
 import { Text, IconButton, Divider, Switch } from 'react-native-paper';
 import { PreferencesContext } from '../components/PreferencesContext';
+import * as constants from '../constants/constants';
 
-const SettingsAIHomeScreen = ({navigation}) => {
+const SettingsAIHomeScreen = ({ navigation }) => {
 
   const { toggleTheme } = React.useContext(PreferencesContext);
 
   const [isBiometricsEnabled, setIsBiometricsEnabled] = useAsyncStorage('isBiometricsEnabled', true);
   const [isDarkTheme, setIsDarkTheme] = useAsyncStorage('isDarkTheme', true);
 
-  
+
   const toggleBiometrics = () => {
     setIsBiometricsEnabled(!isBiometricsEnabled);
   };
@@ -21,11 +22,12 @@ const SettingsAIHomeScreen = ({navigation}) => {
     toggleTheme();
   };
 
-  
+
   return (
-    <ImageBackground source={require('../assets/AI2.jpg')}
-      style={styles.image}
-      imageStyle={styles.imageStyle}
+    <ImageBackground source={require('../assets/background.jpg')}
+      style={constants.aiStyles.imageBackgroundImage}
+      imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+      blurRadius={1}
       resizeMode="cover">
       <View style={styles.container}>
         <View style={styles.innerContainer}>

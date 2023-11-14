@@ -2,18 +2,19 @@ import { View, StyleSheet, ImageBackground, Alert, Keyboard, Image, ScrollView, 
 import React, { useState } from 'react'
 import { Text, TextInput, IconButton, useTheme } from 'react-native-paper';
 import useAsyncStorage from '../storage/useAsyncStorage';
+import * as constants from '../constants/constants';
 
 const OpenAIDallEScreen = () => {
 
     const [openAIResource] = useAsyncStorage("openAIResource", null);
     const theme = useTheme();
-  
+
     var endpoint = "endpoint";
     var key = "key";
 
     if (openAIResource?.key) {
         key = openAIResource?.key;
-     }
+    }
 
     if (openAIResource?.endpoint) {
         endpoint = openAIResource?.endpoint;
@@ -49,16 +50,17 @@ const OpenAIDallEScreen = () => {
     };
 
     return (
-        <ImageBackground source={require('../assets/AI2.jpg')}
-            style={styles.image}
-            imageStyle={styles.imageStyle}
+        <ImageBackground source={require('../assets/background.jpg')}
+            style={constants.aiStyles.imageBackgroundImage}
+            imageStyle={constants.aiStyles.imageBackgroundImageStyle}
+            blurRadius={1}
             resizeMode="cover">
             <View style={styles.container}>
                 <TextInput placeholder='Describe the image you want to create. For example, "watercolor painting of the Seattle skyline"'
                     multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
                 <View style={styles.ImageContainer}>
                     <Image source={{ uri: imageURL }} style={styles.cameraImage} />
-                    {isLoading && <ActivityIndicator size={50} color={theme.colors.onPrimary}/>}
+                    {isLoading && <ActivityIndicator size={50} color={theme.colors.onPrimary} />}
                 </View>
                 <View style={styles.innerContainer}>
                     <IconButton icon="robot" size={30} mode="contained" onPress={() => { createImage() }}></IconButton>

@@ -7,7 +7,7 @@ import uuid from 'react-native-uuid';
 const AIChat = ({ messages, senderText, SetSenderText, onPress }) => {
 
     return (
-        <KeyboardAvoidingView keyboardVerticalOffset={90} style={styles.container} >
+        <KeyboardAvoidingView keyboardVerticalOffset={90} style={styles.container}>
             <ScrollView ref={ref => { this.scrollView = ref }}
                 onContentSizeChange={() => this.scrollView.scrollToEnd({ animated: true })}>
                 {
@@ -16,13 +16,13 @@ const AIChat = ({ messages, senderText, SetSenderText, onPress }) => {
                         if (role === "assistant") {
                             return (<View style={styles.receiver} key={uuid.v4()}>
                                 <Avatar.Icon size={30} icon="robot" />
-                                <Text>{content}</Text>
+                                <Text style={styles.contentText}>{content}</Text>
                             </View>)
                         }
                         else if (role === "user") {
                             return (<View style={styles.sender} key={uuid.v4()}>
                                 <Avatar.Icon size={30} icon="account" />
-                                <Text>{content}</Text>
+                                <Text style={styles.contentText}>{content}</Text>
                             </View>)
                         }
                     })
@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
         padding: 10,
         flex: 1,
         borderColor: 'red',
-        borderWidth: 0.2,
+        borderWidth: 0.2
     },
     receiver: {
         alignSelf: 'flex-start',
@@ -67,10 +67,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         width: '100%'
     },
-    text: {
-        fontSize: 15,
-        fontWeight: 'bold',
-        padding: 10,
+    contentText: {
     },
     bottomtextInput: {
         bottom: 0,

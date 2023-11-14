@@ -7,6 +7,7 @@ import Loading from '../components/Loading';
 import { Text, TextInput, Button } from 'react-native-paper';
 import TextAnalysisApi from '../api/TextAnalysisApi';
 import useAsyncStorage from '../storage/useAsyncStorage';
+import * as constants from '../constants/constants';
 
 const TextAIScreen = () => {
 
@@ -86,9 +87,10 @@ const TextAIScreen = () => {
   }
   else {
     return (
-      <ImageBackground source={require('../assets/AI2.jpg')}
-        style={styles.image}
-        imageStyle={styles.imageStyle}
+      <ImageBackground source={require('../assets/background.jpg')}
+        style={constants.aiStyles.imageBackgroundImage}
+        imageStyle={constants.aiStyles.imageBackgroundImageStyle} 
+        blurRadius={1}
         resizeMode="cover">
 
         <View style={styles.container}>
