@@ -109,9 +109,7 @@ const SpeechAIScreen = () => {
     RNFS.exists(path)
       .then((exists) => {
         if (!exists) {
-         createAudioFile(path, base64String)
-        } else {
-          console.log('File exist');
+          createAudioFile(path, base64String)
         }
       })
       .catch((error) => {
@@ -413,12 +411,14 @@ const SpeechAIScreen = () => {
     resizeMode="cover">
 
     <View style={styles.container}>
-      <AISelectList data={sourceLanguages} setSelected={setSelectedSource}
-        placeholderText='Select Source Language' searchPlaceholderText='Search Source Language' />
-
-      <AISelectList data={targetLanguages} setSelected={setTargetSelected}
-        placeholderText='Select Target Language' searchPlaceholderText='Search Target Language' />
-
+      <View style={styles.selectContainer}>
+        <AISelectList data={sourceLanguages} setSelected={setSelectedSource}
+          placeholderText='Select Source Language' searchPlaceholderText='Search Source Language' />
+      </View>
+      <View style={styles.selectContainer}>
+        <AISelectList data={targetLanguages} setSelected={setTargetSelected}
+          placeholderText='Select Target Language' searchPlaceholderText='Search Target Language' />
+      </View>
       <View style={styles.buttonConatiner}>
         <Button style={styles.button} textColor={(isMicOn & !isAutoSpeak) ? 'red' : theme.colors.onPrimary} icon="microphone" mode="contained" onPress={() => { startAudio(false) }}>Start</Button>
         <Button style={styles.button} icon="microphone-off" mode="contained" onPress={() => { stopAudio() }}>Stop</Button>
@@ -452,6 +452,9 @@ const SpeechAIScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  selectContainer: {
+    margin: 10
   },
   innerContainer: {
     flexDirection: 'row',

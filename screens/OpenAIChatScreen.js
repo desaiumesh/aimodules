@@ -1,41 +1,264 @@
-import { StyleSheet, View, ImageBackground, KeyboardAvoidingView, Keyboard } from 'react-native'
+import { StyleSheet, View, ImageBackground, KeyboardAvoidingView, Keyboard, PermissionsAndroid } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Text, Button, TextInput, IconButton, Avatar, Divider } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 import AIChat from '../components/AIChat';
 import useAsyncStorage from '../storage/useAsyncStorage';
 import * as constants from '../constants/constants';
+import AISelectList from '../components/AISelectList';
+import {
+    AudioConfig, AudioInputStream, ResultReason, SpeechConfig, SpeechTranslationConfig,
+    TranslationRecognizer, SpeechSynthesizer, AudioOutputStream, CancellationDetails, AutoDetectSourceLanguageConfig, LanguageIdMode
+} from 'microsoft-cognitiveservices-speech-sdk';
+import AudioRecord from 'react-native-live-audio-stream';
+import Video from 'react-native-video';
+import { useIsFocused } from "@react-navigation/native";
+import TextTranslationApi from '../api/TextTranslationApi';
 
 const OpenAIChatScreen = () => {
 
+    const isFocused = useIsFocused();
+
+    const [speechResource] = useAsyncStorage("speechResource", null);
+    const [allLanguageData] = useAsyncStorage('speakingLanguages', constants.languages);
     const [openAIResource] = useAsyncStorage("openAIResource", null);
 
-    var endpoint = "endpoint";
-    var key = "key";
+
+    var openAIendpoint = "endpoint";
+    var openAIkey = "key";
 
     if (openAIResource?.key) {
-        key = openAIResource?.key;
+        openAIkey = openAIResource?.key;
     }
 
     if (openAIResource?.endpoint) {
-        endpoint = openAIResource?.endpoint;
+        openAIendpoint = openAIResource?.endpoint;
     }
 
     const [systemText, SetSystemText] = useState("You are an AI assistant that helps people find information.");
     const [senderText, SetSenderText] = useState("");
     const [messages, setMessages] = useState([]);
 
-    const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
+    const [sourceLanguages, setSourceLanguages] = useState([]);
+    const [selectedSource, setSourceSelected] = useState("");
 
-    const client = new OpenAIClient(endpoint, new AzureKeyCredential(key));
+    let aiAudioFileName = 'openAiAudio.mp3';
+
+    const [storedFile, setStoredFile] = useState();
+    const [pauseFile, setPauseFile] = useState(true);
+    const [muteFile, setMuteFile] = useState(true);
+
+    const [isMicOn, setIsMicOn] = useState(false);
+    const [isSpeakerOn, setIsSpeakerOn] = useState(false);
+
+    const [translatedText, setTranslatedText] = useState("");
+
+    const speechKey = speechResource?.key;
+    const speechRegion = speechResource?.region;
+
+    const channels = 1;
+    const bitsPerChannel = 16;
+    const sampleRate = 16000;
+
+    let initializedCorrectly = false;
+    let recognizer;
+
+
+    const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
+    const client = new OpenAIClient(openAIendpoint, new AzureKeyCredential(openAIkey));
+
+    useEffect(() => {
+
+        if (isFocused) {
+            setMuteFile(true);
+            setPauseFile(false);
+        }
+
+        allLanguageData?.forEach(element => {
+            const found = sourceLanguages.some(el => el.value === element.LanguageGenderName)
+
+            if (!found) {
+                sourceLanguages.push({
+                    key: element.key,
+                    value: element.LanguageGenderName,
+                });
+            }
+
+        });
+
+    }, [isFocused, allLanguageData]);
+
+    //prompt for permissions if not granted
+    const checkPermissions = async () => {
+        if (Platform.OS === 'android') {
+            try {
+                const grants = await PermissionsAndroid.requestMultiple([
+                    PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+                    PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+                    PermissionsAndroid.PERMISSIONS.RECORD_AUDIO,
+                ]);
+
+                console.log('write external storage', grants);
+
+                if (
+                    grants['android.permission.WRITE_EXTERNAL_STORAGE'] ===
+                    PermissionsAndroid.RESULTS.GRANTED &&
+                    grants['android.permission.READ_EXTERNAL_STORAGE'] ===
+                    PermissionsAndroid.RESULTS.GRANTED &&
+                    grants['android.permission.RECORD_AUDIO'] ===
+                    PermissionsAndroid.RESULTS.GRANTED
+                ) {
+                    console.log('Permissions granted');
+                } else {
+                    PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE);
+                    PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE);
+                    console.log('All required permissions not granted');
+                    return;
+                }
+            } catch (err) {
+                console.warn(err);
+                return;
+            }
+        }
+    };
+
+    const aiChatLanguage = "en-US";
+
+    const createTranslationRecognizer = async () => {
+
+        let sourceLanguageLocale47 = "en-US";
+
+        if (selectedSource) {
+            const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
+            sourceLanguageLocale47 = sourceLanguageObj.LocaleBCP47;
+        }
+
+        //creates a push stream system which allows new data to be pushed to the recognizer
+        const pushStream = AudioInputStream.createPushStream();
+        const options = { sampleRate, channels, bitsPerChannel, audioSource: 6, };
+
+        AudioRecord.init(options);
+        //everytime data is recieved from the mic, push it to the pushStream
+        AudioRecord.on('data', (data) => {
+            const pcmData = Buffer.from(data, 'base64');
+            pushStream.write(pcmData);
+        });
+
+        AudioRecord.start();
+
+        const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(speechKey, speechRegion);
+        speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
+        speechTranslationConfig.addTargetLanguage(aiChatLanguage);
+
+        const audioConfig = AudioConfig.fromStreamInput(pushStream);
+        recognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
+
+    };
+
+    const startAudio = async () => {
+
+        if (isMicOn) {
+            stopAudio();
+            return;
+        }
+
+        setPauseFile(true);
+
+        await checkPermissions();
+
+        if (!initializedCorrectly) {
+
+            createTranslationRecognizer();
+            setIsMicOn(true);
+
+            SetSenderText("");
+
+            let sourceLText = "";
+            let targetLText = "";
+
+            let sourceLanguageLocale47 = "en-US";
+
+            if (selectedSource) {
+                const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
+                sourceLanguageLocale47 = sourceLanguageObj.LocaleBCP47;
+            }
+
+            recognizer.recognized = (s, e) => {
+
+                let reason = e.result.reason;
+
+                if (reason === ResultReason.TranslatedSpeech) {
+
+                    sourceLText = sourceLText + `${e?.result?.text}`;
+
+                    for (let object of e?.result?.translations?.privMap?.privValues) {
+                        targetLText = targetLText + `${object}.`;
+                    }
+
+                    if (!selectedSource || sourceLanguageLocale47 == aiChatLanguage) {
+                        console.log(sourceLText);
+                        SetSenderText(sourceLText);
+                    }
+                    else {
+                        console.log(targetLText);
+                        SetSenderText(targetLText);
+                    }
+                }
+            };
+
+            recognizer.startContinuousRecognitionAsync(() => {
+                console.log("startContinuousRecognitionAsync");
+            },
+                (err) => {
+                    console.log(err);
+                });
+
+            initializedCorrectly = true;
+        }
+
+    };
+
+    const stopAudio = async () => {
+
+        AudioRecord.stop();
+        setIsMicOn(false);
+
+        if (!!recognizer) {
+            recognizer.stopContinuousRecognitionAsync();
+            initializedCorrectly = false;
+        }
+
+    };
+
+    const volumeToggle = () => {
+
+        setIsSpeakerOn(!isSpeakerOn);
+
+        if (isSpeakerOn && messages?.length > 0) {
+            setMuteFile(true);
+            setPauseFile(false);
+        } else {
+            setMuteFile(false);
+            setPauseFile(false);
+        }
+
+    };
 
     const clearChat = () => {
+
+        if (isMicOn) {
+            stopAudio();
+        }
         setMessages([]);
     };
 
     const sendMessage = async () => {
 
         try {
+
+            if (isMicOn) {
+                stopAudio();
+            }
 
             Keyboard.dismiss();
 
@@ -56,10 +279,132 @@ const OpenAIChatScreen = () => {
             setMessages([...messages]);
             SetSenderText("");
 
+            //read out the message
+            setTranslatedText("");
+            let text = events?.choices[0].message?.content;
+            let fileName = `/${aiAudioFileName}`;
+
+            let targetVoice = "en-US-JennyNeural";
+
+            if (selectedSource) {
+                const sourceLanguageObj = allLanguageData?.find(element => element.key === selectedSource);
+                targetVoice = sourceLanguageObj.Voice;
+
+                if (sourceLanguageObj.LocaleBCP47 !== aiChatLanguage) {
+                    //translate the text
+                    await textTranslation(text, "en", "mr", targetVoice, fileName);
+                    text = translatedText;
+                    console.log(text);
+                }
+                else{
+                    console.log(targetVoice);
+                    await synthesiseAudio(fileName, text, targetVoice);
+                }
+            }
+            else
+            {
+                console.log(targetVoice);
+                await synthesiseAudio(fileName, text, targetVoice);
+            }
+
         } catch (error) {
             console.log(error);
         }
-    }
+    };
+
+    const textTranslation = async (text, from, to, targetVoice,fileName ) => {
+
+        const RESOURCE_KEY = "b9b70b6f34104aec91bc83ae00ce8efd";
+        const RESOURCE_REGION = "australiaeast";
+
+        const [TranslationApi] = await TextTranslationApi({ RESOURCE_KEY, RESOURCE_REGION });
+
+        try {
+            
+            const resp = await TranslationApi({ text, from, to })
+            if (resp.status == 200) {
+                let text = resp?.data[0]?.translations[0]?.text;
+                console.log(text);
+                setTranslatedText(text);
+                await synthesiseAudio(fileName, text, targetVoice);
+            }
+            else {
+                setLanguage("Error");
+            }
+
+        } catch (error) {
+            console.log(error);
+        }
+
+
+    };
+
+    const synthesiseAudio = async (fileName, text, targetVoice) => {
+
+        const speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
+        speechConfig.speechSynthesisVoiceName = targetVoice;
+
+        var stream = AudioOutputStream.createPullStream();
+        let streamConfig = AudioConfig.fromStreamOutput(stream);
+
+        let speechSynthesizer = new SpeechSynthesizer(speechConfig, streamConfig);
+
+        // The event synthesis completed signals that the synthesis is completed.
+        speechSynthesizer.synthesisCompleted = async function (s, e) {
+
+            var arrayBufferData = new ArrayBuffer(320000);
+            let st = await stream.read(arrayBufferData);
+
+            var RNFS = require('react-native-fs');
+            var path = RNFS.DocumentDirectoryPath + fileName;
+
+            var bt = Buffer.from(arrayBufferData).toString('base64');
+
+            RNFS.writeFile(path, bt, 'base64')
+                .then((success) => {
+                    console.log('FILE WRITTEN!', path);
+                })
+                .catch((err) => {
+                    console.log(err.message);
+                });
+
+
+            if (!isSpeakerOn) {
+                setMuteFile(true);
+                setPauseFile(false);
+                setStoredFile(undefined);
+            }
+            else {
+                setMuteFile(false);
+                setPauseFile(false);
+                setStoredFile(path);
+            }
+        }
+
+        speechSynthesizer.synthesisStarted = function (s, e) {
+            console.log("(synthesis started)");
+        };
+
+        speechSynthesizer.SynthesisCanceled = function (s, e) {
+            var cancellationDetails = CancellationDetails.fromResult(e.result);
+            var str = "(cancel) Reason: " + sdk.CancellationReason[cancellationDetails.reason];
+            if (cancellationDetails.reason === sdk.CancellationReason.Error) {
+                str += ": " + e.result.errorDetails;
+            }
+            console.log(str);
+        };
+
+        speechSynthesizer.speakTextAsync(
+            text,
+            function (result) {
+                speechSynthesizer.close();
+                speechSynthesizer = undefined;
+            },
+            function (err) {
+                console.log(err);
+                speechSynthesizer.close();
+            })
+    };
 
     return (
         <ImageBackground source={require('../assets/background.jpg')}
@@ -72,11 +417,23 @@ const OpenAIChatScreen = () => {
                     multiline={true} onChangeText={(systemText) => SetSystemText(systemText)}></TextInput>
 
                 <View style={styles.chatcontainer}>
-                    <Text style={styles.text}>Chat session</Text>
                     <IconButton icon="close" mode="contained" onPress={() => { clearChat() }}>Publish</IconButton>
+                    <View width={240}>
+                        <AISelectList data={sourceLanguages} setSelected={setSourceSelected}
+                            placeholderText='Select Language' searchPlaceholderText='Search Language' />
+                    </View>
+                    <IconButton icon={isSpeakerOn ? "volume-high" : "volume-off"} mode="contained" onPress={() => { volumeToggle() }}>Publish</IconButton>
                 </View>
                 <Divider />
-                <AIChat messages={messages} senderText={senderText} SetSenderText={SetSenderText} onPress={() => { sendMessage() }} />
+                <AIChat messages={messages} senderText={senderText} SetSenderText={SetSenderText} onPress={() => { sendMessage() }}
+                    onMicPress={() => startAudio()} isMicOn={isMicOn} />
+                <Video
+                    source={{ uri: `${storedFile}` }}
+                    shouldPlay={false}
+                    resizeMode="cover"
+                    style={{ width: 1, height: 1 }}
+                    muted={muteFile}
+                    paused={pauseFile} />
             </View>
         </ImageBackground>
     )
@@ -108,6 +465,8 @@ const styles = StyleSheet.create({
     chatcontainer: {
         flexDirection: 'row',
         alignItems: 'center',
+        marginTop: 5,
+        marginBottom: 5,
     },
     footer: {
         flexDirection: 'row',

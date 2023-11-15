@@ -172,9 +172,11 @@ const ClassificationAIScreen = () => {
         <View style={styles.ImageContainer}>
           <Image source={{ uri: 'data:image/jpeg;base64,' + base64Data }} style={styles.cameraImage} />
         </View>
+        <View style={styles.selectContainer}>
         <AISelectList setSelected={setSelectedIteration} data={iterations}
           placeholderText='Select Iteration' searchPlaceholderText='Search Iteration' />
-        <View style={styles.innerContainer}>
+        </View>
+         <View style={styles.innerContainer}>
           <IconButton icon="refresh" mode="contained" onPress={() => { getAndSetupIterations() }}>Add Tags</IconButton>
           <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
           <IconButton icon="robot" mode="contained" onPress={() => { testImage() }}>ANALYSE</IconButton>
@@ -200,6 +202,9 @@ const ClassificationAIScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  selectContainer: {
+    margin: 10
   },
   innerContainer: {
     flexDirection: 'row',

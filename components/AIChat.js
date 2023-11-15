@@ -4,7 +4,7 @@ import { Text, TextInput, IconButton, Avatar } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 import uuid from 'react-native-uuid';
 
-const AIChat = ({ messages, senderText, SetSenderText, onPress }) => {
+const AIChat = ({ messages, senderText, SetSenderText, onPress, onMicPress, isMicOn }) => {
 
     return (
         <KeyboardAvoidingView keyboardVerticalOffset={90} style={styles.container}>
@@ -30,7 +30,8 @@ const AIChat = ({ messages, senderText, SetSenderText, onPress }) => {
 
             </ScrollView>
             <View style={styles.footer}>
-                <TextInput style={styles.bottomtextInput} value={senderText} onChangeText={(senderText) => SetSenderText(senderText)}></TextInput>
+                <TextInput multiline={true} numberOfLines={1} style={styles.bottomtextInput} value={senderText} onChangeText={(senderText) => SetSenderText(senderText)}></TextInput>
+                <IconButton icon={isMicOn? "microphone-off": "microphone"} mode="contained"  onPress={onMicPress}></IconButton>
                 <IconButton icon="send" mode="contained" disabled={senderText === ""} onPress={onPress}></IconButton>
             </View>
         </KeyboardAvoidingView>

@@ -29,10 +29,7 @@ const AISelectList = ({ data, setSelected, placeholderText, searchPlaceholderTex
 const selectListStyles = (colors) => StyleSheet.create({
     boxStyles: {
         borderRadius: 10,
-        margin: 10,
         opacity: 0.7,
-        textAlign: 'center',
-        justifyContent: 'center',
         fontWeight: 'bold',
         backgroundColor: colors.primary
     },
