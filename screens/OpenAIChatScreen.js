@@ -190,19 +190,7 @@ const OpenAIChatScreen = () => {
                 if (reason === ResultReason.TranslatedSpeech) {
 
                     sourceLText = sourceLText + `${e?.result?.text}`;
-
-                    for (let object of e?.result?.translations?.privMap?.privValues) {
-                        targetLText = targetLText + `${object}.`;
-                    }
-
-                    if (!selectedSource || sourceLanguageLocale47 == aiChatLanguage) {
-                        console.log(sourceLText);
-                        SetSenderText(sourceLText);
-                    }
-                    else {
-                        console.log(targetLText);
-                        SetSenderText(targetLText);
-                    }
+                    SetSenderText(sourceLText);
                 }
             };
 
@@ -290,16 +278,8 @@ const OpenAIChatScreen = () => {
                 const sourceLanguageObj = allLanguageData?.find(element => element.key === selectedSource);
                 targetVoice = sourceLanguageObj.Voice;
 
-                if (sourceLanguageObj.LocaleBCP47 !== aiChatLanguage) {
-                    //translate the text
-                    await textTranslation(text, "en", "mr", targetVoice, fileName);
-                    text = translatedText;
-                    console.log(text);
-                }
-                else{
-                    console.log(targetVoice);
-                    await synthesiseAudio(fileName, text, targetVoice);
-                }
+                console.log(targetVoice);
+                await synthesiseAudio(fileName, text, targetVoice);
             }
             else
             {
@@ -314,8 +294,8 @@ const OpenAIChatScreen = () => {
 
     const textTranslation = async (text, from, to, targetVoice,fileName ) => {
 
-        const RESOURCE_KEY = "b9b70b6f34104aec91bc83ae00ce8efd";
-        const RESOURCE_REGION = "australiaeast";
+        const RESOURCE_KEY = "key";
+        const RESOURCE_REGION = "Region";
 
         const [TranslationApi] = await TextTranslationApi({ RESOURCE_KEY, RESOURCE_REGION });
 
