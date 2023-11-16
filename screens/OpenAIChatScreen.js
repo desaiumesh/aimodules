@@ -8,7 +8,7 @@ import * as constants from '../constants/constants';
 import AISelectList from '../components/AISelectList';
 import {
     AudioConfig, AudioInputStream, ResultReason, SpeechConfig, SpeechTranslationConfig,
-    TranslationRecognizer, SpeechSynthesizer, AudioOutputStream, CancellationDetails, AutoDetectSourceLanguageConfig, LanguageIdMode
+    TranslationRecognizer, SpeechSynthesizer, AudioOutputStream, CancellationDetails, AutoDetectSourceLanguageConfig, LanguageIdMode, SpeechRecognizer
 } from 'microsoft-cognitiveservices-speech-sdk';
 import AudioRecord from 'react-native-live-audio-stream';
 import Video from 'react-native-video';
@@ -122,15 +122,17 @@ const OpenAIChatScreen = () => {
         }
     };
 
-    const aiChatLanguage = "en-US";
 
     const createTranslationRecognizer = async () => {
 
-        let sourceLanguageLocale47 = "en-US";
+        let defaultLanguageLocale47 = "en-US";
+        let defaultLanguageode = "en";
+        let sourcelanguageCode = "en";
 
         if (selectedSource) {
             const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
-            sourceLanguageLocale47 = sourceLanguageObj.LocaleBCP47;
+            defaultLanguageLocale47 = sourceLanguageObj.LocaleBCP47;
+            sourcelanguageCode = sourceLanguageObj.LanguageCode;
         }
 
         //creates a push stream system which allows new data to be pushed to the recognizer
@@ -146,19 +148,18 @@ const OpenAIChatScreen = () => {
 
         AudioRecord.start();
 
-        const speechTranslationConfig = SpeechTranslationConfig.fromSubscription(speechKey, speechRegion);
-        speechTranslationConfig.speechRecognitionLanguage = sourceLanguageLocale47;
-        speechTranslationConfig.addTargetLanguage(aiChatLanguage);
+        const speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
+        speechConfig.speechRecognitionLanguage = defaultLanguageLocale47;
 
         const audioConfig = AudioConfig.fromStreamInput(pushStream);
-        recognizer = new TranslationRecognizer(speechTranslationConfig, audioConfig);
+        recognizer = new SpeechRecognizer(speechConfig, audioConfig);
 
     };
 
     const startAudio = async () => {
 
         if (isMicOn) {
-            stopAudio();
+            await stopAudio();
             return;
         }
 
@@ -187,8 +188,9 @@ const OpenAIChatScreen = () => {
 
                 let reason = e.result.reason;
 
-                if (reason === ResultReason.TranslatedSpeech) {
+                if (reason === ResultReason.RecognizedSpeech) {
 
+                    console.log(`RECOGNIZED: ${JSON.stringify(e.result.text)}`);
                     sourceLText = sourceLText + `${e?.result?.text}`;
                     SetSenderText(sourceLText);
                 }
@@ -320,6 +322,11 @@ const OpenAIChatScreen = () => {
     };
 
     const synthesiseAudio = async (fileName, text, targetVoice) => {
+
+        console.log("Sysnthesise Audio")
+        console.log(targetVoice);
+        console.log(text);
+        console.log(fileName);
 
         const speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
         speechConfig.speechSynthesisVoiceName = targetVoice;
