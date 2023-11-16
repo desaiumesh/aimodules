@@ -262,8 +262,9 @@ const OpenAIChatScreen = () => {
 
             messages.push({ role: "user", content: senderText });
 
-            const events = await client.getChatCompletions("TestChat", messages, { maxTokens: 300 });
+            const events = await client.getChatCompletions("TestChat", messages);
 
+            console.log(JSON.stringify(events));
             messages.push({ role: "assistant", content: events?.choices[0].message?.content });
 
             setMessages([...messages]);
@@ -339,7 +340,9 @@ const OpenAIChatScreen = () => {
         // The event synthesis completed signals that the synthesis is completed.
         speechSynthesizer.synthesisCompleted = async function (s, e) {
 
-            var arrayBufferData = new ArrayBuffer(320000);
+            console.log("(synthesis completed)");
+
+            var arrayBufferData = new ArrayBuffer(3200000);
             let st = await stream.read(arrayBufferData);
 
             var RNFS = require('react-native-fs');
