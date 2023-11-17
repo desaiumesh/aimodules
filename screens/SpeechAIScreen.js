@@ -25,11 +25,11 @@ const SpeechAIScreen = () => {
   let aiAudioFileName = 'aiAudio.mp3';
   let aiAutoAudioFileName = 'aiAutoAudio.mp3';
 
-  const [storedFile, setStoredFile] = useState(`/data/user/0/com.aimodules/files/${aiAudioFileName}`);
+  const [storedFile, setStoredFile] = useState(undefined);
   const [pauseFile, setPauseFile] = useState(true);
   const [muteFile, setMuteFile] = useState(true);
 
-  const [storedAutoFile, setStoredAutoFile] = useState(`/data/user/0/com.aimodules/files/${aiAutoAudioFileName.mp3}`);
+  const [storedAutoFile, setStoredAutoFile] = useState(undefined);
   const [isAutoSpeak, setIsAutoSpeak] = useState(false);
   const [pauseAutoFile, setPauseAutoFile] = useState(true);
   const [muteAutoFile, setMuteAutoFile] = useState(true);
@@ -429,7 +429,7 @@ const SpeechAIScreen = () => {
         <Text style={styles.textSource} multiline={true}>{targetLanguagesText}</Text>
 
         <Video
-          source={{ uri: `file:///data/user/0/com.aimodules/files/${aiAudioFileName}` }}
+          source={{ uri: `${storedFile}` }}
           shouldPlay={false}
           resizeMode="cover"
           style={{ width: 1, height: 1 }}
@@ -437,7 +437,7 @@ const SpeechAIScreen = () => {
           paused={pauseFile} />
 
         <Video
-          source={{ uri: `file:///data/user/0/com.aimodules/files/${aiAutoAudioFileName}` }}
+          source={{ uri: `${storedAutoFile}` }}
           shouldPlay={true}
           resizeMode="cover"
           style={{ width: 1, height: 1 }}

@@ -44,7 +44,7 @@ const OpenAIChatScreen = () => {
 
     let aiAudioFileName = 'openAiAudio.mp3';
 
-    const [storedFile, setStoredFile] = useState();
+    const [storedFile, setStoredFile] = useState(undefined);
     const [pauseFile, setPauseFile] = useState(true);
     const [muteFile, setMuteFile] = useState(true);
 
@@ -86,8 +86,41 @@ const OpenAIChatScreen = () => {
 
         });
 
+        var RNFS = require('react-native-fs');
+        var aiAudioFilepath = RNFS.DocumentDirectoryPath + '/' + aiAudioFileName;
+        checkAudioFile(aiAudioFilepath, '');
+
     }, [isFocused, allLanguageData]);
 
+    const checkAudioFile = async (path, base64String) => {
+
+        var RNFS = require('react-native-fs');
+        RNFS.exists(path)
+          .then((exists) => {
+            if (!exists) {
+              createAudioFile(path, base64String)
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      };
+    
+      const createAudioFile = async (path, base64String) => {
+
+        console.log('createAudioFile');
+        console.log(path);
+        var RNFS = require('react-native-fs');
+    
+        RNFS.writeFile(path, base64String, 'base64')
+          .then((success) => {
+            console.log('New FILE WRITTEN!', path);
+          })
+          .catch((err) => {
+            console.log(err.message);
+          });
+      }
+    
     //prompt for permissions if not granted
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
