@@ -11,8 +11,11 @@ import * as constants from '../constants/constants';
 import uuid from 'react-native-uuid';
 import DocumentPicker from 'react-native-document-picker';
 import RNFS from 'react-native-fs';
+import AISelectList from '../components/AISelectList';
+import TextTranslationApi from '../api/TextTranslationApi';
 
 const TextAIScreen = () => {
+  const [allLanguageData] = useAsyncStorage('speakingLanguages', constants.languages);
 
   const [textResource] = useAsyncStorage("textResource", null);
   const [text, setText] = useState("");
@@ -22,13 +25,34 @@ const TextAIScreen = () => {
   const [entities, setEntities] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const [targetLanguages, setTargetLanguages] = useState([]);
+  const [selectedTarget, setTargetSelected] = useState("");
+
+  useEffect(() => {
+
+    allLanguageData?.forEach(element => {
+
+      const found = targetLanguages.some(el => el.value === element.LanguageName)
+
+      if (!found) {
+        targetLanguages.push({
+          key: element.key,
+          value: element.LanguageName,
+        });
+      }
+
+    });
+
+  }, [allLanguageData]);
+
+
   const openDocument = async () => {
 
     try {
       const res = await DocumentPicker.pickSingle({
         type: [DocumentPicker.types.plainText],
       });
-    
+
       const fileContent = await RNFS.readFile(res.uri, 'utf8');
 
       setText("");
@@ -74,8 +98,13 @@ const TextAIScreen = () => {
       TextAnalysisSentimentApi({ text })
         .then(resp => {
           if (resp.status == 200) {
+
             setSentiment(resp?.data?.documents[0]?.sentiment);
-            setSentenceSentiment(resp?.data?.documents[0]?.sentences)
+
+            let sentenceSentiments = resp?.data?.documents[0]?.sentences;
+
+            sentenceSentiments?.map((obj) => ({ ...obj, translatedText: '' }))
+            setSentenceSentiment(sentenceSentiments)
           }
           else {
             setSentiment("Error");
@@ -88,7 +117,7 @@ const TextAIScreen = () => {
 
             let ent = '';
             resp.data.documents[0].entities.forEach(element => {
-              ent += `${element.text} \n`;
+              ent += `${element.text} ,`;
             });
 
             setEntities(ent);
@@ -106,6 +135,49 @@ const TextAIScreen = () => {
     }
   }
 
+  const translateText = async () => {
+
+    if (text == "") {
+      alert("Please enter a Text");
+      return;
+    }
+
+    if (selectedTarget == "") {
+      alert("Please select a Target Language");
+      return;
+    }
+
+    const RESOURCE_KEY = "b9b70b6f34104aec91bc83ae00ce8efd";
+    const RESOURCE_REGION = "australiaeast";
+
+    const [TranslationApi] = await TextTranslationApi({ RESOURCE_KEY, RESOURCE_REGION })
+
+    try {
+
+      setIsLoading(true);
+      const targetLanguageObj = allLanguageData?.find(element => element.key === selectedTarget);
+
+      sentenceSentiment?.forEach(async element => {
+
+        var dataArray = [{ 'text': `${element?.text}`}];
+        const resp = await TranslationApi({ dataArray, to: targetLanguageObj?.LanguageCode })
+        if (resp.status == 200) {
+          element.translatedText ='';
+          element.translatedText = resp?.data[0]?.translations[0]?.text;
+        }
+        else {
+          console.log("Error");
+        }
+      });
+
+    } catch (error) {
+      console.log(error);
+    }
+    finally {
+      setIsLoading(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Loading></Loading>
@@ -122,10 +194,14 @@ const TextAIScreen = () => {
           <TextInput placeholder="Write a text here"
             value={text}
             onChangeText={(text) => setText(text)}
-            style={styles.textInput} multiline={true} numberOfLines={4} ></TextInput>
+            style={styles.textInput} multiline={true} numberOfLines={3} ></TextInput>
+          <AISelectList data={targetLanguages} setSelected={setTargetSelected}
+            placeholderText='Select Target Language' searchPlaceholderText='Search Target Language' />
+
           <View style={styles.innerContainer}>
             <IconButton icon="file" mode="contained" onPress={() => { openDocument() }}></IconButton>
             <IconButton icon="text" mode="contained" onPress={() => { analyseText() }}></IconButton>
+            <IconButton icon="translate" mode="contained" onPress={() => { translateText() }}></IconButton>
           </View>
           <Divider style={styles.divider} />
           <View>
@@ -134,9 +210,9 @@ const TextAIScreen = () => {
               <Text style={styles.languageText}>{language} </Text>
             </View>
             <Divider style={styles.divider} />
-            <View style={styles.outputContainer}>
+            <View>
               <Text style={styles.languageText} >Entities: </Text>
-              <Text style={styles.languageText} multiline={true}>{entities} </Text>
+              <Text style={styles.languageText} multiline={true}>{entities}</Text>
             </View>
             <Divider style={styles.divider} />
             <View style={styles.outputContainer}>
@@ -146,16 +222,19 @@ const TextAIScreen = () => {
           </View>
           <ScrollView>
             {
-              sentenceSentiment?.map(({ sentiment, text }) => {
+              sentenceSentiment?.map(({ sentiment, text, translatedText }) => {
                 return (<View style={styles.outputContainer} key={uuid.v4()}>
                   <View>
                     <Text style={styles.languageText}>{sentiment} : </Text>
                     <Text style={styles.languageText} multiline={true}>{text}</Text>
+                    <Text style={styles.languageText} multiline={true}>{translatedText}</Text>
                   </View>
                 </View>)
               })
             }
           </ScrollView>
+          <Divider style={styles.divider} />
+
         </View>
       </ImageBackground>
     )
@@ -205,7 +284,10 @@ const styles = StyleSheet.create({
   },
   outputContainer: {
     flexDirection: 'row',
-    margin: 5
+    marginLeft: 5,
+    marginRight: 5,
+    marginTop: 2,
+    marginBottom: 3
   }
 })
 

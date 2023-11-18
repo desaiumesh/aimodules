@@ -4,7 +4,7 @@ const TextTranslationApi = async ({ RESOURCE_KEY, RESOURCE_REGION }) => {
 
     const baseUrl = 'https://api.cognitive.microsofttranslator.com';
 
-    const makeRequest = async (text, endpoint, from, to) => {
+    const makeRequest = async (dataArray, endpoint, from, to) => {
 
         const configurationObject = {
             method: 'post',
@@ -13,14 +13,13 @@ const TextTranslationApi = async ({ RESOURCE_KEY, RESOURCE_REGION }) => {
                 'Ocp-Apim-Subscription-Key': RESOURCE_KEY,
                 'Ocp-Apim-Subscription-Region': RESOURCE_REGION,
             },
-            data: [{
-                'text': `${text}`
-            }],
+            data: dataArray,
             url: `${baseUrl}${endpoint}`,
             params: {
                 'api-version': '3.0',
                 'from': from,
-                'to': to
+                'to': to,
+                'profanityAction':'Deleted'
             }
         };
 
@@ -34,8 +33,8 @@ const TextTranslationApi = async ({ RESOURCE_KEY, RESOURCE_REGION }) => {
         }
     }
 
-    const TranslationApi = async ({ text, from, to }) => {
-        return makeRequest(text, `/translate`, from, to);
+    const TranslationApi = async ({ dataArray, from, to }) => {
+        return makeRequest(dataArray, `/translate`, from, to);
     }
 
     return [TranslationApi];
