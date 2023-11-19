@@ -21,7 +21,7 @@ const ImageAnalysisApi = async ({ RESOURCE_KEY, RESOURCE_REGION }) => {
   }
 
   const API_VERSION = '2023-02-01-preview';
-  const FEATURES = 'Tags,Objects,People';
+  const FEATURES = 'Read,Tags,Objects,People';
   const LANGUAGE = 'en';
   const GENDER_NEUTRAL_CAPTION = 'False';
 

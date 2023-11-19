@@ -21,6 +21,7 @@ const VisionAIScreen = () => {
     const [checked, setChecked] = React.useState(false);
     const [objectConfidence, setObjectConfidence] = React.useState(0.50);
     const [personConfidence, setPersonConfidence] = React.useState(0.70);
+    const [readText, setReadText] = useState();
     const theme = useTheme();
 
     const checkPermissions = async () => {
@@ -131,6 +132,7 @@ const VisionAIScreen = () => {
             var base64 = Buffer.from(base64Data, 'base64');
             const resp = await ImageAnalysisVApi({ base64 });
 
+            setReadText(resp?.data?.readResult?.content);
             const tags = resp?.data?.tagsResult?.values?.map((item) => item.name);
             setTags(tags);
 
@@ -261,6 +263,11 @@ const VisionAIScreen = () => {
                     <IconButton icon="camera" mode="contained" onPress={() => { OpenCamera() }}></IconButton>
                     <IconButton icon="image-multiple" mode="contained" onPress={() => { OpenGallery() }}></IconButton>
                     <IconButton icon="robot" mode="contained" onPress={() => { analyse() }}>ANALYSE</IconButton>
+                    <Checkbox.Item label="People" status={checked ? 'checked' : 'unchecked'}
+                    onPress={() => {
+                        setChecked(!checked);
+                    }}
+                />
                 </View>
 
                 <View style={styles.innerSliderContainer} >
@@ -294,15 +301,10 @@ const VisionAIScreen = () => {
                         onValueChange={(value) => { setPersonConfidence(value) }}
                     />
                 </View>
-
                 <ScrollView>
                     <Text style={styles.imageText}>{tags?.map(u => u).join(", ")}</Text>
+                    <Text style={styles.imageText}>{readText}</Text>
                 </ScrollView>
-                <Checkbox.Item label="People only" status={checked ? 'checked' : 'unchecked'}
-                    onPress={() => {
-                        setChecked(!checked);
-                    }}
-                />
             </View>
         </ImageBackground>
     )
@@ -334,7 +336,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'space-between',
-        gap: 20,
+        gap: 5,
     },
     innerSliderContainer: {
         alignItems: 'center',
