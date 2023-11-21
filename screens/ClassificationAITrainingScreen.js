@@ -219,7 +219,6 @@ const ClassificationAITrainingScreen = () => {
                 var tagArray = selectedTag;
                 var base64 = Buffer.from(element.base64, 'base64');
                 const resp = await CustomVisionUploadImagesApi({ tagArray, base64 });
-                console.log(JSON.stringify(resp.data));
             });
 
             alert('Images uploaded successfully');

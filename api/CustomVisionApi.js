@@ -9,6 +9,13 @@ const CustomVisionApi = ({ projectId, trainingKey, trainingUrl, predictionKey, p
         },
     };
 
+    const axiosTrainingImageConfig = {
+        headers: {
+            "Content-Type": "application/octet-stream",
+            'Training-key': trainingKey,
+        },
+    };
+
     const axiosPredictionConfig = {
         headers: {
             "Content-Type": "application/octet-stream",
@@ -49,12 +56,12 @@ const CustomVisionApi = ({ projectId, trainingKey, trainingUrl, predictionKey, p
 
     const CustomVisionCreateTagApi = async ({ name }) => {
         const url = `${trainingUrl}/customvision/v3.0/Training/projects/${projectId}/tags?name=${name}`;
-        return handleRequest('get', url, axiosTrainingConfig, null);
+        return handleRequest('post', url, axiosTrainingConfig, null);
     }
 
     const CustomVisionUploadImagesApi = async ({ tagArray, base64 }) => {
         const url = `${trainingUrl}/customvision/v3.0/Training/projects/${projectId}/images?tagIds=${tagArray}`;
-        return handleRequest('post',url, axiosTrainingConfig, base64);
+        return handleRequest('post',url, axiosTrainingImageConfig, base64);
     }
 
     const CustomVisionTrainApi = async () => {
