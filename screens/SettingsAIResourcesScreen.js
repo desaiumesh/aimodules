@@ -11,6 +11,10 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
   const [textKey, SetTextKey] = useState('3a04cc4d49624e1f920ec4a1adb62aa8');
   const [textRegion, SetTextRegion] = useState('australiaeast');
 
+  const [translationResource, SetTranslationResource] = useAsyncStorage("translationResource", null);
+  const [translationKey, SetTranslationKey] = useState('3a04cc4d49624e1f920ec4a1adb62aa8');
+  const [translationRegion, SetTranslationRegion] = useState('australiaeast');
+
   const [speechResource, SetSpeechResource] = useAsyncStorage("speechResource", null);
   const [speechKey, SetSpeechKey] = useState('06495201accc4dfcaf847bb1f71252aa');
   const [speechRegion, SetSpeechRegion] = useState('australiaeast');
@@ -33,22 +37,27 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
   const [openAIResource, SetOpenAIResource] = useAsyncStorage("openAIResource", null);
   const [openAIKey, SetOpenAIKey] = useState('064e47e4ffce44678ac1fda5522f8f81');
   const [openAIEndpoint, SetOpenAIEndpoint] = useState('https://openaimodules102.openai.azure.com/');
+  const [openAIDeploymentName, setOpenAIDeploymentName] = useState('Test');
 
 
   const saveResources = () => {
     SetTextResource({ key: textKey, region: textRegion });
+    SetTranslationResource({ key: translationKey, region: translationRegion });
     SetSpeechResource({ key: speechKey, region: speechRegion });
     SetComputerResource({ key: computerKey, region: computerRegion });
     SetCustomVisionResource({
       projectId: customVisionProjectId, trainingKey: customVisionTrainingKey, trainingUrl: customVisionTrainingUrl,
       predictionKey: customVisionPredictionKey, predictionUrl: customVisionPredictionUrl, publicationPredictionKey: cVPublicationPredictionKey
     });
-    SetOpenAIResource({ key: openAIKey, endpoint: openAIEndpoint });
+    SetOpenAIResource({ key: openAIKey, endpoint: openAIEndpoint, deploymentName: openAIDeploymentName });
   };
 
   useEffect(() => {
     SetTextKey(textResource?.key);
     SetTextRegion(textResource?.region);
+
+    SetTranslationKey(translationResource?.key);
+    SetTranslationRegion(translationResource?.region);
 
     SetSpeechKey(speechResource?.key);
     SetSpeechRegion(speechResource?.region);
@@ -65,8 +74,9 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
 
     SetOpenAIKey(openAIResource?.key);
     SetOpenAIEndpoint(openAIResource?.endpoint);
+    setOpenAIDeploymentName(openAIResource?.deploymentName);
 
-  }, [textResource, speechResource, computerResource,
+  }, [textResource, translationResource, speechResource, computerResource,
     customVisionResource, openAIResource]);
 
   const goBack = () => {
@@ -91,6 +101,12 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
             firstInputPlaceholder='Key' firstInput={textKey} firstInputChanged={(textKeyValue) => { SetTextKey(textKeyValue); }}
             secondInputPlaceholder='Region' secondInput={textRegion}
             secondInputChanged={(textRegionValue) => { SetTextRegion(textRegionValue); }}>
+          </AIResource>
+          <Divider style={styles.divider} />
+          <AIResource resourceText='Translation Resource'
+            firstInputPlaceholder='Key' firstInput={translationKey} firstInputChanged={(textKeyValue) => { SetTranslationKey(textKeyValue); }}
+            secondInputPlaceholder='Region' secondInput={translationRegion}
+            secondInputChanged={(textRegionValue) => { SetTranslationRegion(textRegionValue); }}>
           </AIResource>
           <Divider style={styles.divider} />
           <AIResource resourceText='Speech Resource'
@@ -129,6 +145,8 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
             secondInputPlaceholder='Region' secondInput={openAIEndpoint}
             secondInputChanged={(openAIEndpointValue) => { SetOpenAIEndpoint(openAIEndpointValue); }}>
           </AIResource>
+          <TextInput style={styles.keyInputStyles} placeholder='Open AI Deployment Name' value={openAIDeploymentName}
+            onChangeText={(text) => setOpenAIDeploymentName(text)} />
           <Divider style={styles.divider} />
         </ScrollView>
       </View>

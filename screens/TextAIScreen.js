@@ -18,6 +18,7 @@ const TextAIScreen = () => {
   const [allLanguageData] = useAsyncStorage('speakingLanguages', constants.languages);
 
   const [textResource] = useAsyncStorage("textResource", null);
+  const [translationResource] = useAsyncStorage("translationResource", null);
   const [text, setText] = useState("");
   const [language, setLanguage] = useState("");
   const [sentiment, setSentiment] = useState("");
@@ -147,8 +148,8 @@ const TextAIScreen = () => {
       return;
     }
 
-    const RESOURCE_KEY = "b9b70b6f34104aec91bc83ae00ce8efd";
-    const RESOURCE_REGION = "australiaeast";
+    const RESOURCE_KEY = translationResource?.key;
+    const RESOURCE_REGION = translationResource?.region;
 
     const [TranslationApi] = await TextTranslationApi({ RESOURCE_KEY, RESOURCE_REGION })
 

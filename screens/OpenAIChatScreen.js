@@ -26,6 +26,7 @@ const OpenAIChatScreen = () => {
 
     var openAIendpoint = "endpoint";
     var openAIkey = "key";
+    var openAIDeploymentName = "Test";
 
     if (openAIResource?.key) {
         openAIkey = openAIResource?.key;
@@ -33,6 +34,10 @@ const OpenAIChatScreen = () => {
 
     if (openAIResource?.endpoint) {
         openAIendpoint = openAIResource?.endpoint;
+    }
+
+    if (openAIResource?.deploymentName) {
+        openAIDeploymentName = openAIResource?.deploymentName;
     }
 
     const [systemText, SetSystemText] = useState("You are an AI assistant that helps people find information.");
@@ -295,7 +300,7 @@ const OpenAIChatScreen = () => {
 
             messages.push({ role: "user", content: senderText });
 
-            const events = await client.getChatCompletions("TestChat", messages);
+            const events = await client.getChatCompletions(openAIDeploymentName, messages);
 
             console.log(JSON.stringify(events));
             messages.push({ role: "assistant", content: events?.choices[0].message?.content });
