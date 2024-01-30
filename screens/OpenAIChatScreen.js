@@ -1,5 +1,5 @@
 import { StyleSheet, View, ImageBackground, KeyboardAvoidingView, Keyboard, PermissionsAndroid } from 'react-native'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Text, Button, TextInput, IconButton, Avatar, Divider } from 'react-native-paper';
 import { ScrollView } from 'react-native-gesture-handler';
 import AIChat from '../components/AIChat';
@@ -8,12 +8,14 @@ import * as constants from '../constants/constants';
 import AISelectList from '../components/AISelectList';
 import {
     AudioConfig, AudioInputStream, ResultReason, SpeechConfig, SpeechTranslationConfig,
-    TranslationRecognizer, SpeechSynthesizer, AudioOutputStream, CancellationDetails, AutoDetectSourceLanguageConfig, LanguageIdMode, SpeechRecognizer
+    TranslationRecognizer, SpeechSynthesizer, AudioOutputStream, CancellationDetails, AutoDetectSourceLanguageConfig, LanguageIdMode, SpeechRecognizer, AvatarConfig, AvatarSynthesizer, AvatarVideoFormat, Coordinate
 } from 'microsoft-cognitiveservices-speech-sdk';
 import AudioRecord from 'react-native-live-audio-stream';
-import Video from 'react-native-video';
+import Video, { VideoRef } from 'react-native-video';
 import { useIsFocused } from "@react-navigation/native";
 import TextTranslationApi from '../api/TextTranslationApi';
+import WebRTCPeerConnection from './WebRTCPeerConnection';
+import { RTCSessionDescription, RTCView, mediaDevices } from 'react-native-webrtc';
 
 const OpenAIChatScreen = () => {
 
@@ -57,6 +59,9 @@ const OpenAIChatScreen = () => {
     const [isSpeakerOn, setIsSpeakerOn] = useState(false);
 
     const [translatedText, setTranslatedText] = useState("");
+    const [lastAIText, setLastAIText] = useState("");
+
+    const myAvatarVideoEleRef = useRef(null);
 
     const speechKey = speechResource?.key;
     const speechRegion = speechResource?.region;
@@ -71,6 +76,37 @@ const OpenAIChatScreen = () => {
 
     const { OpenAIClient, AzureKeyCredential } = require("@azure/openai");
     const client = new OpenAIClient(openAIendpoint, new AzureKeyCredential(openAIkey));
+
+    const [avatarSynthesizer, setAvatarSynthesizer] = useState(null);
+
+    const [peerConnection, setPeerConnection] = useState(null);
+    const [desc, setDesc] = useState(null);
+
+    const [localStream, setLocalStream] = useState(null);
+    const [remoteStream, setRemoteStream] = useState(null);
+
+    const configuration = {
+        iceServers: [
+            {
+                urls: [
+                    'stun:relay.communication.microsoft.com:3478',
+                    'turn:relay.communication.microsoft.com:3478'
+                ],
+                username: 'BQAASFvei4AB2lUQMklNpQvMTGgCelW9yurLpdlT93QAAAAMARCUzqi03fRJI7bu+4soZwU4AhAAAAAd+mHjlS/4lToNAE/P5vxzfBrxyPAhd/kqTl7U/ewRi3Y=',
+                credential: 'rf6iuNvgPHd3jdVYMu6PlSWVhnw=',
+                routeType: 'any'
+            },
+            {
+                urls: [
+                    'stun:20.202.255.225:3478',
+                    'turn:20.202.255.225:3478'
+                ],
+                username: 'BQAASFvei4AB2lUQMklNpQvMTGgCelW9yurLpdlT93QAAAAMARCUzqi03fRJI7bu+4soZwU4AhAAAAAd+mHjlS/4lToNAE/P5vxzfBrxyPAhd/kqTl7U/ewRi3Y=',
+                credential: 'rf6iuNvgPHd3jdVYMu6PlSWVhnw=',
+                routeType: 'nearest'
+            }
+        ]
+    };
 
     useEffect(() => {
 
@@ -95,37 +131,44 @@ const OpenAIChatScreen = () => {
         var aiAudioFilepath = RNFS.DocumentDirectoryPath + '/' + aiAudioFileName;
         checkAudioFile(aiAudioFilepath, '');
 
+        const startLocalStream = async () => {
+            const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
+            setLocalStream(stream);
+        };
+
+        startLocalStream();
+
     }, [isFocused, allLanguageData]);
 
     const checkAudioFile = async (path, base64String) => {
 
         var RNFS = require('react-native-fs');
         RNFS.exists(path)
-          .then((exists) => {
-            if (!exists) {
-              createAudioFile(path, base64String)
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      };
-    
-      const createAudioFile = async (path, base64String) => {
+            .then((exists) => {
+                if (!exists) {
+                    createAudioFile(path, base64String)
+                }
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    };
+
+    const createAudioFile = async (path, base64String) => {
 
         console.log('createAudioFile');
         console.log(path);
         var RNFS = require('react-native-fs');
-    
+
         RNFS.writeFile(path, base64String, 'base64')
-          .then((success) => {
-            console.log('New FILE WRITTEN!', path);
-          })
-          .catch((err) => {
-            console.log(err.message);
-          });
-      }
-    
+            .then((success) => {
+                console.log('New FILE WRITTEN!', path);
+            })
+            .catch((err) => {
+                console.log(err.message);
+            });
+    }
+
     //prompt for permissions if not granted
     const checkPermissions = async () => {
         if (Platform.OS === 'android') {
@@ -314,6 +357,7 @@ const OpenAIChatScreen = () => {
             let fileName = `/${aiAudioFileName}`;
 
             let targetVoice = "en-US-JennyNeural";
+            setLastAIText(text);
 
             if (selectedSource) {
                 const sourceLanguageObj = allLanguageData?.find(element => element.key === selectedSource);
@@ -322,8 +366,7 @@ const OpenAIChatScreen = () => {
                 console.log(targetVoice);
                 await synthesiseAudio(fileName, text, targetVoice);
             }
-            else
-            {
+            else {
                 console.log(targetVoice);
                 await synthesiseAudio(fileName, text, targetVoice);
             }
@@ -333,7 +376,7 @@ const OpenAIChatScreen = () => {
         }
     };
 
-    const textTranslation = async (text, from, to, targetVoice,fileName ) => {
+    const textTranslation = async (text, from, to, targetVoice, fileName) => {
 
         const RESOURCE_KEY = "key";
         const RESOURCE_REGION = "Region";
@@ -341,7 +384,7 @@ const OpenAIChatScreen = () => {
         const [TranslationApi] = await TextTranslationApi({ RESOURCE_KEY, RESOURCE_REGION });
 
         try {
-            
+
             const resp = await TranslationApi({ text, from, to })
             if (resp.status == 200) {
                 let text = resp?.data[0]?.translations[0]?.text;
@@ -358,6 +401,220 @@ const OpenAIChatScreen = () => {
         }
 
 
+    };
+
+
+    const createAvatarSynthesizer = () => {
+
+        const speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
+        speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural";
+
+        const talkingAvatarCharacter = "lisa"
+        const talkingAvatarStyle = "casual-sitting"
+
+        const avatarConfig = new AvatarConfig(talkingAvatarCharacter, talkingAvatarStyle);
+
+        let avatarSynthesizer = new AvatarSynthesizer(speechConfig, avatarConfig);
+
+        avatarSynthesizer.avatarEventReceived = function (s, e) {
+            var offsetMessage = ", offset from session start: " + e.offset / 10000 + "ms."
+            if (e.offset === 0) {
+                offsetMessage = ""
+            }
+            console.log("[" + (new Date()).toISOString() + "] Event received: " + e.description + offsetMessage)
+        }
+        return avatarSynthesizer;
+    };
+
+    const handleOnTrack = (event) => {
+
+        console.log("handleOnTrack");
+        console.log("[" + (new Date()).toISOString() + "] Handle Track data.")
+
+        console.log(event);
+
+        if (event.track.kind === "audio") {
+            console.log("audio track");
+            console.log(event.track);
+        }
+        else if (event.track.kind === "video") {
+            console.log("video track");
+            console.log(event.track);
+            console.log("Video Streams");
+            console.log(event.streams[0]._tracks);
+
+            /*
+            const mediaPlayer = myAvatarVideoEleRef.current;
+            mediaPlayer.id = event.track.kind;
+            mediaPlayer.srcObject = event.streams[0];
+            mediaPlayer.autoplay = true;
+            mediaPlayer.playsInline = true;
+            mediaPlayer.addEventListener('play', () => {
+                console.log("[" + (new Date()).toISOString() + "] Video play event received.")
+                window.requestAnimationFrame(() => { });
+            });
+            */
+        }
+    };
+
+
+    const stopSpeaking = () => {
+        console.log("stopsSpeaking");
+        avatarSynthesizer.stopSpeakingAsync().then(() => {
+            console.log("[" + (new Date()).toISOString() + "] Stop speaking request sent.")
+
+        }).catch();
+    };
+
+    const stopSession = () => {
+        try {
+            //Stop speaking
+            console.log("stopSession");
+            avatarSynthesizer.stopSpeakingAsync().then(() => {
+                console.log("[" + (new Date()).toISOString() + "] Stop speaking session request sent.")
+                // Close the synthesizer
+                avatarSynthesizer.close();
+            }).catch();
+        } catch (e) {
+        }
+    };
+
+    const startAvatar = async () => {
+
+        // Set remote description and create answer
+        const localPC = peerConnection;
+
+
+    };
+
+    const speakSelectedText = async () => {
+
+        console.log("speakSelectedText: ", lastAIText);
+
+        try {
+
+            avatarSynthesizer.speakTextAsync(lastAIText).then(
+                (result) => {
+                    console.log("[" + (new Date()).toISOString() + "] Speak request sent.");
+                    console.log(result);
+                    if (result.reason === ResultReason.SynthesizingAudioCompleted) {
+                        console.log("Speech and avatar synthesized to video stream.")
+                    } else {
+                        console.log("Unable to speak. Result ID: " + result.resultId)
+                        if (result.reason === ResultReason.Canceled) {
+                            let cancellationDetails = CancellationDetails.fromResult(result)
+                            console.log(cancellationDetails.reason)
+
+                        }
+                    }
+                }).catch((error) => {
+                    console.log(error)
+                    avatarSynthesizer.close()
+                });
+        } catch (error) {
+            console.log("speakSelectedText error");
+            console.log(error);
+        }
+    };
+
+
+    const startSession = async () => {
+        
+        var pc = new WebRTCPeerConnection(configuration);
+        var pc2 = new WebRTCPeerConnection(configuration);
+
+        let isFront = true;
+        mediaDevices.enumerateDevices().then(sourceInfos => {
+            console.log(sourceInfos);
+            let videoSourceId;
+            for (let i = 0; i < sourceInfos.length; i++) {
+                const sourceInfo = sourceInfos[i];
+                if (sourceInfo.kind == "videoinput" && sourceInfo.facing == (isFront ? "front" : "environment")) {
+                    videoSourceId = sourceInfo.deviceId;
+                }
+            }
+            mediaDevices.getUserMedia({
+                audio: true,
+                video: {
+                    mandatory: {
+                        minWidth: 500, // Provide your own width, height and frame rate here
+                        minHeight: 300,
+                        minFrameRate: 30
+                    },
+                    facingMode: (isFront ? "user" : "environment"),
+                    optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
+                }
+            })
+                .then(stream => {
+                    console.log("ADDING STREAMS!");
+                    
+                    const audioTracks = stream.getAudioTracks();
+                    
+                    pc.addTrack(audioTracks[0], stream);
+                    pc2.addTrack(audioTracks[0], stream);
+
+                    pc.createOffer().then(desc => {
+                        pc.setLocalDescription(desc).then(() => {
+                            console.log("DESC1 --> " + JSON.stringify(desc))
+                            pc2.setRemoteDescription(desc);
+                            pc2.createAnswer().then(desc2 => {
+                                pc2.setLocalDescription(desc2).then(() => {
+                                    console.log(" DESC2 --> " + JSON.stringify(desc2))
+                                    pc.setRemoteDescription(desc2);
+                                });
+                            });
+                        });
+                    });
+                })
+                .catch(error => {
+                    // Log error
+                    console.log("Create Offer error : ", error);
+                });
+        });
+        
+        pc.addEventListener('track', handleOnTrack);
+        pc.addTransceiver("video", { direction: "sendrecv" });
+        pc.addTransceiver("audio", { direction: "sendrecv" });
+
+        pc.oniceconnectionstatechange = e => {
+            console.log("WebRTC status: " + pc.iceConnectionState)
+
+            if (pc.iceConnectionState === 'connected') {
+                console.log("Connected to Azure Avatar service");
+            }
+
+            if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+                console.log("Azure Avatar service Disconnected");
+            }
+        };
+
+        pc.addEventListener("icecandidate", (e) => {
+            if (!e.candidate) {
+                console.log("Got final candidate!");
+                return;
+            }
+        });
+
+
+
+        console.log("Create Avatar Synthesizer");
+        let avatarSynthesizer = createAvatarSynthesizer();
+        setAvatarSynthesizer(avatarSynthesizer);
+
+        avatarSynthesizer.startAvatarAsync(pc).then((r) => {
+
+            console.log("[" + (new Date()).toISOString() + "] Start avatar request sent.")
+            console.log(r);
+            console.log("Avatar started");
+
+        }).catch((error) => {
+            console.log("startAvatar error");
+            console.log(error)
+            avatarSynthesizer.close()
+        });
+
+        console.log("peerConnection");
+        console.log(pc);
     };
 
     const synthesiseAudio = async (fileName, text, targetVoice) => {
@@ -432,6 +689,7 @@ const OpenAIChatScreen = () => {
                 console.log(err);
                 speechSynthesizer.close();
             })
+
     };
 
     return (
@@ -451,6 +709,19 @@ const OpenAIChatScreen = () => {
                             placeholderText='Select Language' searchPlaceholderText='Search Language' />
                     </View>
                     <IconButton icon={isSpeakerOn ? "volume-high" : "volume-off"} mode="contained" onPress={() => { volumeToggle() }}>Publish</IconButton>
+                </View>
+                <Divider />
+                <View style={styles.chatcontainer}>
+                    <IconButton icon="connection" mode="contained" onPress={() => { startSession() }}></IconButton>
+                    <IconButton icon="lan-disconnect" mode="contained" onPress={() => { stopSession() }}></IconButton>
+                    <IconButton icon="play" mode="contained" onPress={() => { startAvatar() }}></IconButton>
+                    <IconButton icon="microphone" mode="contained" onPress={() => { speakSelectedText() }}></IconButton>
+                    <IconButton icon="microphone-off" mode="contained" onPress={() => { stopSpeaking() }}></IconButton>
+
+                </View>
+                <View style={styles.container}>
+                    {localStream && <RTCView streamURL={localStream.toURL()} />}
+                    {remoteStream && <RTCView streamURL={remoteStream.toURL()} />}
                 </View>
                 <Divider />
                 <AIChat messages={messages} senderText={senderText} SetSenderText={SetSenderText} onPress={() => { sendMessage() }}
