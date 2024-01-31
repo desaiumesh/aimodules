@@ -16,6 +16,7 @@ import { useIsFocused } from "@react-navigation/native";
 import TextTranslationApi from '../api/TextTranslationApi';
 import WebRTCPeerConnection from './WebRTCPeerConnection';
 import { RTCSessionDescription, RTCView, mediaDevices } from 'react-native-webrtc';
+import ReactAvatarSynthesizer from './ReactAvatarSynthesizer';
 
 const OpenAIChatScreen = () => {
 
@@ -131,12 +132,14 @@ const OpenAIChatScreen = () => {
         var aiAudioFilepath = RNFS.DocumentDirectoryPath + '/' + aiAudioFileName;
         checkAudioFile(aiAudioFilepath, '');
 
+        /*
         const startLocalStream = async () => {
             const stream = await mediaDevices.getUserMedia({ audio: true, video: true });
             setLocalStream(stream);
         };
 
         startLocalStream();
+        */
 
     }, [isFocused, allLanguageData]);
 
@@ -414,7 +417,7 @@ const OpenAIChatScreen = () => {
 
         const avatarConfig = new AvatarConfig(talkingAvatarCharacter, talkingAvatarStyle);
 
-        let avatarSynthesizer = new AvatarSynthesizer(speechConfig, avatarConfig);
+        let avatarSynthesizer = new ReactAvatarSynthesizer(speechConfig, avatarConfig);
 
         avatarSynthesizer.avatarEventReceived = function (s, e) {
             var offsetMessage = ", offset from session start: " + e.offset / 10000 + "ms."
@@ -442,7 +445,7 @@ const OpenAIChatScreen = () => {
             console.log(event.track);
             console.log("Video Streams");
             console.log(event.streams[0]._tracks);
-
+            setRemoteStream(event.streams[0]);
             /*
             const mediaPlayer = myAvatarVideoEleRef.current;
             mediaPlayer.id = event.track.kind;
@@ -521,91 +524,30 @@ const OpenAIChatScreen = () => {
     const startSession = async () => {
         
         var pc = new WebRTCPeerConnection(configuration);
-        var pc2 = new WebRTCPeerConnection(configuration);
 
-        let isFront = true;
-        mediaDevices.enumerateDevices().then(sourceInfos => {
-            console.log(sourceInfos);
-            let videoSourceId;
-            for (let i = 0; i < sourceInfos.length; i++) {
-                const sourceInfo = sourceInfos[i];
-                if (sourceInfo.kind == "videoinput" && sourceInfo.facing == (isFront ? "front" : "environment")) {
-                    videoSourceId = sourceInfo.deviceId;
-                }
-            }
-            mediaDevices.getUserMedia({
-                audio: true,
-                video: {
-                    mandatory: {
-                        minWidth: 500, // Provide your own width, height and frame rate here
-                        minHeight: 300,
-                        minFrameRate: 30
-                    },
-                    facingMode: (isFront ? "user" : "environment"),
-                    optional: (videoSourceId ? [{ sourceId: videoSourceId }] : [])
-                }
-            })
-                .then(stream => {
-                    console.log("ADDING STREAMS!");
-                    
-                    const audioTracks = stream.getAudioTracks();
-                    
-                    pc.addTrack(audioTracks[0], stream);
-                    pc2.addTrack(audioTracks[0], stream);
-
-                    pc.createOffer().then(desc => {
-                        pc.setLocalDescription(desc).then(() => {
-                            console.log("DESC1 --> " + JSON.stringify(desc))
-                            pc2.setRemoteDescription(desc);
-                            pc2.createAnswer().then(desc2 => {
-                                pc2.setLocalDescription(desc2).then(() => {
-                                    console.log(" DESC2 --> " + JSON.stringify(desc2))
-                                    pc.setRemoteDescription(desc2);
-                                });
-                            });
-                        });
-                    });
-                })
-                .catch(error => {
-                    // Log error
-                    console.log("Create Offer error : ", error);
-                });
-        });
-        
         pc.addEventListener('track', handleOnTrack);
-        pc.addTransceiver("video", { direction: "sendrecv" });
-        pc.addTransceiver("audio", { direction: "sendrecv" });
-
-        pc.oniceconnectionstatechange = e => {
-            console.log("WebRTC status: " + pc.iceConnectionState)
-
-            if (pc.iceConnectionState === 'connected') {
-                console.log("Connected to Azure Avatar service");
-            }
-
-            if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
-                console.log("Azure Avatar service Disconnected");
-            }
-        };
-
-        pc.addEventListener("icecandidate", (e) => {
-            if (!e.candidate) {
-                console.log("Got final candidate!");
-                return;
-            }
-        });
-
-
-
+        pc.addTransceiver('video', { direction: 'sendrecv' })
+        pc.addTransceiver('audio', { direction: 'sendrecv' })
+        
         console.log("Create Avatar Synthesizer");
         let avatarSynthesizer = createAvatarSynthesizer();
         setAvatarSynthesizer(avatarSynthesizer);
 
-        avatarSynthesizer.startAvatarAsync(pc).then((r) => {
+        pc.oniceconnectionstatechange = e => {
+            console.log("WebRTC status: " + pc.iceConnectionState)
+    
+            if (pc.iceConnectionState === 'connected') {
+                console.log("Connected to Azure Avatar service");
+            }
+    
+            if (pc.iceConnectionState === 'disconnected' || pc.iceConnectionState === 'failed') {
+                console.log("Azure Avatar service Disconnected");
+            }
+        }
+    
 
-            console.log("[" + (new Date()).toISOString() + "] Start avatar request sent.")
-            console.log(r);
-            console.log("Avatar started");
+        avatarSynthesizer.startAvatarAsync(pc).then((r) => {
+            console.log("[" + (new Date()).toISOString() + "] Avatar started.");
 
         }).catch((error) => {
             console.log("startAvatar error");
@@ -720,8 +662,7 @@ const OpenAIChatScreen = () => {
 
                 </View>
                 <View style={styles.container}>
-                    {localStream && <RTCView streamURL={localStream.toURL()} />}
-                    {remoteStream && <RTCView streamURL={remoteStream.toURL()} />}
+                    {remoteStream && <RTCView streamURL={remoteStream.toURL()} style={{flex:1}}/>}
                 </View>
                 <Divider />
                 <AIChat messages={messages} senderText={senderText} SetSenderText={SetSenderText} onPress={() => { sendMessage() }}
