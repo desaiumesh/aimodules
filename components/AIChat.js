@@ -16,13 +16,13 @@ const AIChat = ({ messages, senderText, SetSenderText, onPress, onMicPress, isMi
                         if (role === "assistant") {
                             return (<View style={styles.receiver} key={uuid.v4()}>
                                 <Avatar.Icon size={30} icon="robot" />
-                                <Text style={styles.contentText}>{content}</Text>
+                                <Text selectable={true} style={styles.contentText}>{content}</Text>
                             </View>)
                         }
                         else if (role === "user") {
                             return (<View style={styles.sender} key={uuid.v4()}>
                                 <Avatar.Icon size={30} icon="account" />
-                                <Text style={styles.contentText}>{content}</Text>
+                                <Text selectable={true} style={styles.contentText}>{content}</Text>
                             </View>)
                         }
                     })

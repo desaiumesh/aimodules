@@ -34,6 +34,7 @@ const DrawerContent = () => {
                     <Drawer.Item label="Text" icon="text" onPress={() => { navigation.navigate('Text') }} />
                     <Drawer.Item label="Speech" icon="microphone" onPress={() => { navigation.navigate('Speech') }} />
                     <Drawer.Item label="Vision" icon="laptop" onPress={() => { navigation.navigate('Vision') }} />
+                    <Drawer.Item label="Avatar" icon="robot" onPress={() => { navigation.navigate('Avatar') }} />
                 </Drawer.Section>
                 <Drawer.Section title='Classification' >
                     <Drawer.Item label="Train" icon="cog" onPress={() => { navigation.navigate('Train') }} />

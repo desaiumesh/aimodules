@@ -39,6 +39,10 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
   const [openAIEndpoint, SetOpenAIEndpoint] = useState('https://openaimodules102.openai.azure.com/');
   const [openAIDeploymentName, setOpenAIDeploymentName] = useState('Test');
 
+  const [avatarAIResource, SetAvatarAIResource] = useAsyncStorage("avatarAIResource", null);
+  const [avatarStunUrl, SetAvatarStunUrl] = useState('stun:relay.communication.microsoft.com:3478');
+  const [avatarUsername, SetAvatarUsername] = useState('BQAASFvei4AB2lUQMklNpQvMTGgCelW9yurLpdlT93QAAAAMARCUzqi03fRJI7bu+4soZwU4AhAAAAAd+mHjlS/4lToNAE/P5vxzfBrxyPAhd/kqTl7U/ewRi3Y=');
+  const [avatarCredential, SetavatarCredential] = useState('rf6iuNvgPHd3jdVYMu6PlSWVhnw=');
 
   const saveResources = () => {
     SetTextResource({ key: textKey, region: textRegion });
@@ -50,6 +54,7 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
       predictionKey: customVisionPredictionKey, predictionUrl: customVisionPredictionUrl, publicationPredictionKey: cVPublicationPredictionKey
     });
     SetOpenAIResource({ key: openAIKey, endpoint: openAIEndpoint, deploymentName: openAIDeploymentName });
+    SetAvatarAIResource({ stunUrl: avatarStunUrl, username: avatarUsername, credential: avatarCredential });
   };
 
   useEffect(() => {
@@ -148,6 +153,13 @@ const SettingsAIResourcesScreen = ({ navigation }) => {
           <TextInput style={styles.keyInputStyles} placeholder='Open AI Deployment Name' value={openAIDeploymentName}
             onChangeText={(text) => setOpenAIDeploymentName(text)} />
           <Divider style={styles.divider} />
+          <AIResource resourceText='Avatar'
+            firstInputPlaceholder='Stun URL' firstInput={avatarStunUrl} firstInputChanged={(avatarStunUrlValue) => { SetAvatarStunUrl(avatarStunUrlValue); }}
+            secondInputPlaceholder='Username' secondInput={avatarUsername}
+            secondInputChanged={(avatarUsernameValue) => { SetAvatarUsername(avatarUsernameValue); }}>
+          </AIResource>
+          <TextInput style={styles.keyInputStyles} placeholder='Credential' value={avatarCredential}
+            onChangeText={(text) => SetavatarCredential(text)} />
         </ScrollView>
       </View>
     </ImageBackground>

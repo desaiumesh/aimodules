@@ -10,6 +10,7 @@ const AiModels = () => {
         <AiModel title="Text" imgUrl={require('../assets/text.jpg')} screen="Text"></AiModel>
         <AiModel title="Speech" imgUrl={require('../assets/speech.jpg')} screen="Speech"></AiModel>
         <AiModel title="Vision" imgUrl={require('../assets/vision.jpg')} screen="Vision"></AiModel>
+        <AiModel title="Avatar" imgUrl={require('../assets/Avatar.jpg')} screen="Avatar"></AiModel>
         <AiModel title="Classify" imgUrl={require('../assets/language.jpg')} screen="Classify"></AiModel>
         <AiModel title="Chat" imgUrl={require('../assets/AI2.jpg')} screen="Chat"></AiModel>
         <AiModel title="Image" imgUrl={require('../assets/AI1.jpg')} screen="Image"></AiModel>
