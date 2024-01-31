@@ -180,15 +180,15 @@ const AvatarAIScreen = () => {
             blurRadius={1}
             resizeMode="cover">
             <View style={styles.container}>
-                <View style={styles.container}>
-                    {remoteStream && <RTCView streamURL={remoteStream.toURL()} style={{ flex: 1 }} />}
+                <View style={styles.avatarcontainer}>
+                    {remoteStream && <RTCView streamURL={remoteStream.toURL()} style={{ flex: 1 }} objectFit={'cover'} />}
                 </View>
                 <Divider style={styles.divider} />
-                <View>
-                <TextInput placeholder="Write a text here"
-                    value={text}
-                    onChangeText={(text) => setText(text)}
-                    style={styles.textInput} multiline={true} numberOfLines={3} ></TextInput>
+                <View style={styles.textcontainer}>
+                    <TextInput placeholder="Write a text here" height={150}
+                        value={text}
+                        onChangeText={(text) => setText(text)}
+                        style={styles.textInput} multiline={true} numberOfLines={3} ></TextInput>
                     <View style={styles.innerContainer}>
                         <IconButton icon="connection" mode="contained" onPress={() => { startSession() }}></IconButton>
                         <IconButton icon="lan-disconnect" mode="contained" onPress={() => { stopSession() }}></IconButton>
@@ -206,6 +206,16 @@ const styles = StyleSheet.create({
         alignContent: 'center',
         padding: 10,
         flex: 1,
+    },
+    avatarcontainer: {
+        alignContent: 'center',
+        padding: 2,
+        flex: 1
+    },
+    textcontainer: {
+        alignContent: 'center',
+        padding: 2,
+        height: 200
     },
     image: {
         flex: 1,
