@@ -5,15 +5,18 @@ import * as constants from '../constants/constants';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { ImageBackground, ScrollView } from 'react-native';
 import Loading from '../components/Loading';
-import { Text, TextInput, Button, Divider, IconButton } from 'react-native-paper';
+import { Text, TextInput, Button, Divider, IconButton, useTheme } from 'react-native-paper';
 import useAsyncStorage from '../storage/useAsyncStorage';
 
 import WebRTCPeerConnection from './WebRTCPeerConnection';
 import { RTCSessionDescription, RTCView, mediaDevices } from 'react-native-webrtc';
 import ReactAvatarSynthesizer from './ReactAvatarSynthesizer';
 import { AvatarConfig, CancellationDetails, ResultReason, SpeechConfig } from 'microsoft-cognitiveservices-speech-sdk';
+import AISelectList from '../components/AISelectList';
 
 const AvatarAIScreen = () => {
+
+    const [allLanguageData] = useAsyncStorage('speakingLanguages', constants.languages);
 
     const [speechResource] = useAsyncStorage("speechResource", null);
     const speechKey = speechResource?.key;
@@ -29,6 +32,12 @@ const AvatarAIScreen = () => {
 
     const [avatarSynthesizer, setAvatarSynthesizer] = useState(null);
 
+    const [sourceLanguages, setSourceLanguages] = useState([]);
+    const [selectedSource, setSelectedSource] = useState("");
+    const [isConnected, setIsConnected] = useState(false);
+
+    const theme = useTheme();
+
     const configuration = {
         iceServers: [
             {
@@ -42,10 +51,32 @@ const AvatarAIScreen = () => {
         ]
     };
 
+    useEffect(() => {
+        allLanguageData?.forEach(element => {
+
+            const found = sourceLanguages.some(el => el.value === element.LanguageGenderName)
+
+            if (!found) {
+                sourceLanguages.push({
+                    key: element.key,
+                    value: element.LanguageGenderName,
+                });
+            }
+        });
+    }, [allLanguageData]);
+
     const createAvatarSynthesizer = () => {
 
+        let sourceVoice = "en-US-JennyNeural";
+
+        if (selectedSource) {
+            const sourceLanguageObj = allLanguageData.find(element => element.key === selectedSource);
+            sourceVoice = sourceLanguageObj.Voice;
+        }
+
+        console.log("Source Voice: ", sourceVoice);
         const speechConfig = SpeechConfig.fromSubscription(speechKey, speechRegion);
-        speechConfig.speechSynthesisVoiceName = "en-US-JennyNeural";
+        speechConfig.speechSynthesisVoiceName = sourceVoice;
 
         const talkingAvatarCharacter = "lisa"
         const talkingAvatarStyle = "casual-sitting"
@@ -102,6 +133,7 @@ const AvatarAIScreen = () => {
                 console.log("[" + (new Date()).toISOString() + "] Stop speaking session request sent.")
                 // Close the synthesizer
                 avatarSynthesizer.close();
+                setIsConnected(false);
             }).catch();
         } catch (e) {
         }
@@ -162,6 +194,7 @@ const AvatarAIScreen = () => {
 
         avatarSynthesizer.startAvatarAsync(peerConnection).then((r) => {
             console.log("[" + (new Date()).toISOString() + "] Avatar started.");
+            setIsConnected(true);
 
         }).catch((error) => {
             console.log("startAvatar error");
@@ -180,17 +213,19 @@ const AvatarAIScreen = () => {
             blurRadius={1}
             resizeMode="cover">
             <View style={styles.container}>
+                <AISelectList data={sourceLanguages} setSelected={setSelectedSource}
+                    placeholderText='Select Language' searchPlaceholderText='Search Language' />
                 <View style={styles.avatarcontainer}>
                     {remoteStream && <RTCView streamURL={remoteStream.toURL()} style={{ flex: 1 }} objectFit={'cover'} />}
                 </View>
                 <Divider style={styles.divider} />
                 <View style={styles.textcontainer}>
-                    <TextInput placeholder="Write a text here" height={150}
+                    <TextInput placeholder="Write a text here" height={100}
                         value={text}
                         onChangeText={(text) => setText(text)}
                         style={styles.textInput} multiline={true} numberOfLines={3} ></TextInput>
                     <View style={styles.innerContainer}>
-                        <IconButton icon="connection" mode="contained" onPress={() => { startSession() }}></IconButton>
+                        <IconButton icon="connection" mode="contained" iconColor={(isConnected) ? 'yellow' : theme.colors.primary} onPress={() => { startSession() }}></IconButton>
                         <IconButton icon="lan-disconnect" mode="contained" onPress={() => { stopSession() }}></IconButton>
                         <IconButton icon="play" mode="contained" onPress={() => { speakSelectedText() }}></IconButton>
                         <IconButton icon="stop" mode="contained" onPress={() => { stopSpeaking() }}></IconButton>
@@ -215,7 +250,7 @@ const styles = StyleSheet.create({
     textcontainer: {
         alignContent: 'center',
         padding: 2,
-        height: 200
+        height: 150
     },
     image: {
         flex: 1,
