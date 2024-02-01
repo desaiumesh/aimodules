@@ -1,6 +1,19 @@
 import { RTCPeerConnection } from "react-native-webrtc";
-import { RTCConfiguration } from "react-native-webrtc/lib/typescript/RTCPeerConnection";
 
+declare type RTCIceServer = {
+  credential?: string;
+  url?: string;
+  urls?: string | string[];
+  username?: string;
+};
+
+declare type RTCConfiguration = {
+  bundlePolicy?: 'balanced' | 'max-compat' | 'max-bundle';
+  iceCandidatePoolSize?: number;
+  iceServers?: RTCIceServer[];
+  iceTransportPolicy?: 'all' | 'relay';
+  rtcpMuxPolicy?: 'negotiate' | 'require';
+};
 
 export default class WebRTCPeerConnection extends RTCPeerConnection{
    
@@ -17,5 +30,4 @@ export default class WebRTCPeerConnection extends RTCPeerConnection{
       getConfiguration(): RTCConfiguration {  
         return this.rtcConfiguration;  
       }  
-
 }

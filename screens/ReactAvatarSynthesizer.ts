@@ -70,7 +70,6 @@ export default class ReactAvatarSynthesizer extends AvatarSynthesizer{
             JSON.parse(sdpAnswerString) ,
         );
         await peerConnection.setRemoteDescription(sdpAnswer);
-        console.log("In startAvatarAsync - end");
 
         return new SynthesisResult(
             result.resultId,
