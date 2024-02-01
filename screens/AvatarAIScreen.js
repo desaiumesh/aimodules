@@ -8,9 +8,9 @@ import Loading from '../components/Loading';
 import { Text, TextInput, Button, Divider, IconButton, useTheme } from 'react-native-paper';
 import useAsyncStorage from '../storage/useAsyncStorage';
 
-import WebRTCPeerConnection from './WebRTCPeerConnection';
+import WebRTCPeerConnection from '../Classes/WebRTCPeerConnection';
 import { RTCSessionDescription, RTCView, mediaDevices } from 'react-native-webrtc';
-import ReactAvatarSynthesizer from './ReactAvatarSynthesizer';
+import ReactAvatarSynthesizer from '../Classes/ReactAvatarSynthesizer';
 import { AvatarConfig, CancellationDetails, ResultReason, SpeechConfig } from 'microsoft-cognitiveservices-speech-sdk';
 import AISelectList from '../components/AISelectList';
 
