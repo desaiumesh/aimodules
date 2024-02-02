@@ -13,6 +13,7 @@ import { RTCSessionDescription, RTCView, mediaDevices } from 'react-native-webrt
 import ReactAvatarSynthesizer from '../Classes/ReactAvatarSynthesizer';
 import { AvatarConfig, CancellationDetails, ResultReason, SpeechConfig } from 'microsoft-cognitiveservices-speech-sdk';
 import AISelectList from '../components/AISelectList';
+import InCallManager from 'react-native-incall-manager';
 
 const AvatarAIScreen = () => {
 
@@ -62,6 +63,7 @@ const AvatarAIScreen = () => {
                     value: element.LanguageGenderName,
                 });
             }
+
         });
     }, [allLanguageData]);
 
@@ -186,11 +188,17 @@ const AvatarAIScreen = () => {
             if (peerConnection.iceConnectionState === 'connected') {
                 console.log("Connected to Azure Avatar service");
                 setIsConnected(true);
+
+                InCallManager.setSpeakerphoneOn(true);
+                InCallManager.setForceSpeakerphoneOn(true);
             }
 
             if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
                 console.log("Azure Avatar service Disconnected");
                 setIsConnected(false);
+
+                InCallManager.setSpeakerphoneOn(false);
+                InCallManager.setForceSpeakerphoneOn(false);
             }
         }
 
@@ -218,20 +226,20 @@ const AvatarAIScreen = () => {
                 <AISelectList data={sourceLanguages} setSelected={setSelectedSource}
                     placeholderText='Select Language' searchPlaceholderText='Search Language' />
                 <View style={styles.avatarcontainer}>
-                    {remoteStream && <RTCView streamURL={remoteStream.toURL()} style={{ flex: 1 }} objectFit={'cover'} />}
+                    {remoteStream && <RTCView streamURL={remoteStream.toURL()} style={{ height: 800, width: '100%' }} objectFit={'cover'} />}
                 </View>
-                <Divider style={styles.divider} />
                 <View style={styles.textcontainer}>
                     <TextInput placeholder="Write a text here" height={100}
                         value={text}
                         onChangeText={(text) => setText(text)}
                         style={styles.textInput} multiline={true} numberOfLines={3} ></TextInput>
-                    <View style={styles.innerContainer}>
-                        <IconButton icon="connection" mode="contained" iconColor={(isConnected) ? 'yellow' : theme.colors.primary} onPress={() => { startSession() }}></IconButton>
-                        <IconButton icon="lan-disconnect" mode="contained" onPress={() => { stopSession() }}></IconButton>
-                        <IconButton icon="play" mode="contained" onPress={() => { speakSelectedText() }}></IconButton>
-                        <IconButton icon="stop" mode="contained" onPress={() => { stopSpeaking() }}></IconButton>
-                    </View>
+                </View>
+                
+                <View style={styles.innerContainer}>
+                    <IconButton icon="connection" mode="contained" iconColor={(isConnected) ? 'yellow' : theme.colors.primary} onPress={() => { startSession() }}></IconButton>
+                    <IconButton icon="lan-disconnect" mode="contained" onPress={() => { stopSession() }}></IconButton>
+                    <IconButton icon="play" mode="contained" onPress={() => { speakSelectedText() }}></IconButton>
+                    <IconButton icon="stop" mode="contained" onPress={() => { stopSpeaking() }}></IconButton>
                 </View>
             </View>
         </ImageBackground>
@@ -241,7 +249,7 @@ const AvatarAIScreen = () => {
 const styles = StyleSheet.create({
     container: {
         alignContent: 'center',
-        padding: 10,
+        padding: 4,
         flex: 1,
     },
     avatarcontainer: {
@@ -252,7 +260,7 @@ const styles = StyleSheet.create({
     textcontainer: {
         alignContent: 'center',
         padding: 2,
-        height: 150
+        height: 120
     },
     image: {
         flex: 1,
@@ -271,11 +279,12 @@ const styles = StyleSheet.create({
         marginTop: 5
     },
     innerContainer: {
-        padding: 2,
-        alignItems: 'center',
         flexDirection: 'row',
         justifyContent: 'center',
-        borderRadius: 10
+        position: "absolute",
+        top: 55,
+        left: 170,
+        width: 25,
     },
     text: {
         fontSize: 15,
