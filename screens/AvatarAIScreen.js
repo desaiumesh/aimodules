@@ -196,9 +196,6 @@ const AvatarAIScreen = () => {
             if (peerConnection.iceConnectionState === 'disconnected' || peerConnection.iceConnectionState === 'failed') {
                 console.log("Azure Avatar service Disconnected");
                 setIsConnected(false);
-
-                InCallManager.setSpeakerphoneOn(false);
-                InCallManager.setForceSpeakerphoneOn(false);
             }
         }
 
